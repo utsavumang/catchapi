@@ -1,1 +1,2 @@
+echo "=> Husky is checking your commit message..."
 pnpm exec commitlint --edit "$1"
