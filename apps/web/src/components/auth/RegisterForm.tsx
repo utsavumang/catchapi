@@ -2,8 +2,16 @@ import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { registerSchema, RegisterInput } from '@catchapi/shared';
 import { User, Mail, Lock } from 'lucide-react';
+import { useState } from 'react';
+import { api } from '../../lib/axios';
+import { useAuthStore } from '../../store/auth.store';
+import { isAxiosError } from 'axios';
 
 export const RegisterForm = () => {
+  const [serverError, setServerError] = useState<string | null>(null);
+
+  const setCredentials = useAuthStore((state) => state.setCredentials);
+
   const {
     register,
     handleSubmit,
@@ -13,8 +21,25 @@ export const RegisterForm = () => {
   });
 
   const onSubmit = async (data: RegisterInput) => {
-    console.log('Valid data ready for API:', data);
-    alert(JSON.stringify(data, null, 2));
+    setServerError(null);
+    try {
+      const response = await api.post('/auth/register', data);
+
+      setCredentials(response.data.token, {
+        id: response.data._id,
+        name: response.data.name,
+        email: response.data.email,
+      });
+
+      alert('Registration Successful! Check your console.');
+      console.log('Logged in user:', response.data);
+    } catch (error) {
+      if (isAxiosError(error) && error.response) {
+        setServerError(error.response.data.message || 'Registration failed');
+      } else {
+        setServerError('An unexpected error occurred');
+      }
+    }
   };
 
   return (
@@ -23,6 +48,12 @@ export const RegisterForm = () => {
         <h2 className="text-3xl font-bold text-white mb-2">Create Account</h2>
         <p className="text-gray-400">Join CatchAPI to manage your webhooks.</p>
       </div>
+
+      {serverError && (
+        <div className="mb-5 p-3 bg-red-900/20 border border-red-500/50 rounded-lg text-red-400 text-sm text-center">
+          {serverError}
+        </div>
+      )}
 
       <form onSubmit={handleSubmit(onSubmit)} className="space-y-5">
         <div>
