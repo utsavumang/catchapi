@@ -4,7 +4,11 @@ import helmet from 'helmet';
 import dotenv from 'dotenv';
 import { RegisterInput } from '@catchapi/shared'; // Importing from your monorepo!
 
+import { connectDB } from './config/db';
+
 dotenv.config();
+
+connectDB();
 
 const app = express();
 const PORT = process.env.PORT || 5000;

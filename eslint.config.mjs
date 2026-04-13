@@ -11,6 +11,10 @@ export default tseslint.config(
     languageOptions: {
       ecmaVersion: 'latest',
       sourceType: 'module',
+      parserOptions: {
+        projectService: true, // Tells ESLint to use the nearest tsconfig
+        tsconfigRootDir: import.meta.dirname, // Anchors the resolution to the root
+      },
       globals: {
         module: 'readonly',
         require: 'readonly',
