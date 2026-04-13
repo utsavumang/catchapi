@@ -30,7 +30,7 @@ export const registerUser = async (
       _id: user._id,
       name: user.name,
       email: user.email,
-      token: generateToken(user._id as string),
+      token: generateToken(user._id.toString()),
     });
   } catch (error) {
     if (error instanceof Error) {
@@ -60,7 +60,7 @@ export const loginUser = async (req: Request, res: Response): Promise<void> => {
       res.status(401).json({ message: 'Invalid email or password' });
       return;
     }
-
+    // @ts-expect-error - matchPassword is a custom schema method not recognized by default Mongoose types
     const isMatch = await user.matchPassword(password);
     if (!isMatch) {
       res.status(401).json({ message: 'Invalid email or password' });
@@ -71,7 +71,7 @@ export const loginUser = async (req: Request, res: Response): Promise<void> => {
       _id: user._id,
       name: user.name,
       email: user.email,
-      token: generateToken(user._id as string),
+      token: generateToken(user._id.toString()),
     });
   } catch (error) {
     if (error instanceof Error) {
