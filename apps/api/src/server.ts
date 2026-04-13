@@ -6,6 +6,8 @@ import { RegisterInput } from '@catchapi/shared'; // Importing from your monorep
 
 import { connectDB } from './config/db';
 
+import authRoutes from './routes/auth.routes';
+
 dotenv.config();
 
 connectDB();
@@ -16,6 +18,8 @@ const PORT = process.env.PORT || 5000;
 app.use(helmet());
 app.use(cors());
 app.use(express.json());
+
+app.use('/api/auth', authRoutes);
 
 app.get('/health', (req: Request, res: Response) => {
   const dummyUser: RegisterInput = {
