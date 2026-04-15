@@ -1,19 +1,17 @@
 import express, { Request, Response } from 'express';
 import cors from 'cors';
 import helmet from 'helmet';
-import dotenv from 'dotenv';
-import { RegisterInput } from '@catchapi/shared'; // Importing from your monorepo!
 
+import { env } from './config/env';
+import { RegisterInput } from '@catchapi/shared';
 import { connectDB } from './config/db';
 
 import authRoutes from './routes/auth.routes';
 
-dotenv.config();
-
 connectDB();
 
 const app = express();
-const PORT = process.env.PORT || 5000;
+const PORT = env.PORT;
 
 app.use(helmet());
 app.use(cors());
