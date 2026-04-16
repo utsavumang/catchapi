@@ -1,18 +1,12 @@
 import { Request, Response } from 'express';
 import { User } from '../models/user.model';
 import { generateToken } from '../utils/generateToken';
-import { registerSchema, loginSchema } from '@catchapi/shared';
 import { catchAsync } from '../utils/catchAsync';
 import { AppError } from '../utils/AppError';
 
 // @desc    Register a new user
 // @route   POST /api/auth/register
 export const registerUser = catchAsync(async (req: Request, res: Response) => {
-  const validation = registerSchema.safeParse(req.body);
-  if (!validation.success) {
-    throw new AppError(validation.error.errors[0].message, 400);
-  }
-
   const { name, email, password } = validation.data;
 
   const userExists = await User.findOne({ email });
@@ -33,11 +27,6 @@ export const registerUser = catchAsync(async (req: Request, res: Response) => {
 // @desc    Authenticate user & get token
 // @route   POST /api/auth/login
 export const loginUser = catchAsync(async (req: Request, res: Response) => {
-  const validation = loginSchema.safeParse(req.body);
-  if (!validation.success) {
-    throw new AppError(validation.error.errors[0].message, 400);
-  }
-
   const { email, password } = validation.data;
 
   const user = await User.findOne({ email }).select('+password');
