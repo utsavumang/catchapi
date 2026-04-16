@@ -3,11 +3,12 @@ import { User } from '../models/user.model';
 import { generateToken } from '../utils/generateToken';
 import { catchAsync } from '../utils/catchAsync';
 import { AppError } from '../utils/AppError';
+import { AuthRequest } from '../middleware/auth.middleware';
 
 // @desc    Register a new user
 // @route   POST /api/auth/register
 export const registerUser = catchAsync(async (req: Request, res: Response) => {
-  const { name, email, password } = validation.data;
+  const { name, email, password } = req.body;
 
   const userExists = await User.findOne({ email });
   if (userExists) {
@@ -27,7 +28,7 @@ export const registerUser = catchAsync(async (req: Request, res: Response) => {
 // @desc    Authenticate user & get token
 // @route   POST /api/auth/login
 export const loginUser = catchAsync(async (req: Request, res: Response) => {
-  const { email, password } = validation.data;
+  const { email, password } = req.body;
 
   const user = await User.findOne({ email }).select('+password');
   if (!user) {
@@ -44,5 +45,17 @@ export const loginUser = catchAsync(async (req: Request, res: Response) => {
     name: user.name,
     email: user.email,
     token: generateToken(user._id.toString()),
+  });
+});
+
+// @desc    Get current logged in user
+// @route   GET /api/v1/auth/me
+// @access  Private
+export const getMe = catchAsync(async (req: AuthRequest, res: Response) => {
+  res.status(200).json({
+    status: 'success',
+    data: {
+      user: req.user,
+    },
   });
 });
