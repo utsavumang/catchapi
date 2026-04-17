@@ -4,10 +4,10 @@ import { User } from '../models/user.model';
 import { AppError } from '../utils/AppError';
 import { catchAsync } from '../utils/catchAsync';
 import { env } from '../config/env';
-
+import { Types } from 'mongoose';
 export interface AuthRequest extends Request {
   user?: {
-    _id: unknown;
+    _id: Types.ObjectId;
     name: string;
     email: string;
   };
