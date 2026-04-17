@@ -8,6 +8,7 @@ import { connectDB } from './config/db';
 import { errorHandler } from './middleware/error.middleware';
 
 import authRoutes from './routes/auth.routes';
+import endpointRoutes from './routes/endpoint.routes';
 
 connectDB();
 
@@ -18,6 +19,7 @@ app.use(cors());
 app.use(express.json());
 
 app.use('/api/v1/auth', authRoutes);
+app.use('/api/v1/endpoints', endpointRoutes);
 
 app.get('/health', (req: Request, res: Response) => {
   const dummyUser: RegisterInput = {
