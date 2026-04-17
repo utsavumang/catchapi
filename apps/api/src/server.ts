@@ -5,7 +5,12 @@ import helmet from 'helmet';
 import { env } from './config/env';
 import { RegisterInput } from '@catchapi/shared';
 import { connectDB } from './config/db';
+
 import { errorHandler } from './middleware/error.middleware';
+import {
+  apiLimiter,
+  webhookLimiter,
+} from './middleware/rateLimiter.middleware';
 
 import authRoutes from './routes/auth.routes';
 import endpointRoutes from './routes/endpoint.routes';
@@ -19,6 +24,7 @@ app.use(helmet());
 
 app.use(
   '/w',
+  webhookLimiter,
   cors({ origin: '*' }),
   [
     express.json({ limit: '512kb' }),
@@ -29,7 +35,7 @@ app.use(
   catcherRoutes
 );
 
-app.use('/api', cors({ origin: env.FRONTEND_URL }), express.json());
+app.use('/api', apiLimiter, cors({ origin: env.FRONTEND_URL }), express.json());
 
 app.use('/api/v1/auth', authRoutes);
 app.use('/api/v1/endpoints', endpointRoutes);
