@@ -9,14 +9,27 @@ import { errorHandler } from './middleware/error.middleware';
 
 import authRoutes from './routes/auth.routes';
 import endpointRoutes from './routes/endpoint.routes';
+import catcherRoutes from './routes/catcher.routes';
 
 connectDB();
 
 const app = express();
 
 app.use(helmet());
-app.use(cors());
-app.use(express.json());
+
+app.use(
+  '/w',
+  cors({ origin: '*' }),
+  [
+    express.json({ limit: '512kb' }),
+    express.urlencoded({ extended: true, limit: '512kb' }),
+    express.text({ type: ['text/*', 'application/xml'], limit: '512kb' }),
+    express.raw({ type: '*/*', limit: '512kb' }),
+  ],
+  catcherRoutes
+);
+
+app.use('/api', cors({ origin: env.FRONTEND_URL }), express.json());
 
 app.use('/api/v1/auth', authRoutes);
 app.use('/api/v1/endpoints', endpointRoutes);
