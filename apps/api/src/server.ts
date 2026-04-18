@@ -1,10 +1,12 @@
 import express, { Request, Response } from 'express';
 import cors from 'cors';
 import helmet from 'helmet';
+import pinoHttp from 'pino-http';
 
 import { env } from './config/env';
 import { RegisterInput } from '@catchapi/shared';
 import { connectDB } from './config/db';
+import { logger } from './utils/logger';
 
 import { errorHandler } from './middleware/error.middleware';
 import {
@@ -21,6 +23,15 @@ connectDB();
 const app = express();
 
 app.use(helmet());
+app.use(
+  pinoHttp({
+    logger,
+    // Only log errors for the /w route.
+    autoLogging: {
+      ignore: (req) => (req.url ? req.url.startsWith('/w/') : false),
+    },
+  })
+);
 
 app.use(
   '/w',
@@ -58,5 +69,5 @@ app.use(errorHandler);
 
 const PORT = env.PORT;
 app.listen(PORT, () => {
-  console.log(`Server running on http://localhost:${PORT}`);
+  logger.info(`Server running on http://localhost:${PORT}`);
 });

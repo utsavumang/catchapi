@@ -1,6 +1,7 @@
 import { Request, Response, NextFunction } from 'express';
 import { AppError } from '../utils/AppError';
 import { env } from '../config/env';
+import { logger } from '../utils/logger';
 
 export const errorHandler = (
   err: Error | AppError,
@@ -18,6 +19,14 @@ export const errorHandler = (
   } else if ((err as Error & { code?: number }).code === 11000) {
     statusCode = 400;
     message = 'Duplicate field value entered';
+  }
+
+  if (env.NODE_ENV === 'development') {
+    logger.error({
+      message: err.message,
+      stack: err.stack,
+      path: req.originalUrl,
+    });
   }
 
   res.status(statusCode).json({
