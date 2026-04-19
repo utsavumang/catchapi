@@ -63,14 +63,14 @@ export const getPayloads = catchAsync(
       _id?: { $lt: string };
     }
 
-    const dbQuery: PayloadQuery = { endpointId };
+    const dbQuery: PayloadQuery = { endpointId: endpointId as string };
 
     if (method) {
-      dbQuery.method = method;
+      dbQuery.method = method as string;
     }
 
     if (cursor) {
-      dbQuery._id = { $lt: cursor };
+      dbQuery._id = { $lt: cursor as string };
     }
 
     const payloads = await Payload.find(dbQuery)
