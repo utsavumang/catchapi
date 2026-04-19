@@ -5,16 +5,19 @@ import pinoHttp from 'pino-http';
 import swaggerUi from 'swagger-ui-express';
 
 import { env } from './config/env';
-import { RegisterInput } from '@catchapi/shared';
 import { connectDB } from './config/db';
-import { logger } from './utils/logger';
 import { generateOpenAPIDocument } from './config/swagger';
+
+import { logger } from './utils/logger';
+import { setupGracefulShutdown } from './utils/shutdown';
 
 import { errorHandler } from './middleware/error.middleware';
 import {
   apiLimiter,
   webhookLimiter,
 } from './middleware/rateLimiter.middleware';
+
+import { RegisterInput } from '@catchapi/shared';
 
 import authRoutes from './routes/auth.routes';
 import endpointRoutes from './routes/endpoint.routes';
@@ -73,6 +76,8 @@ app.get('/health', (req: Request, res: Response) => {
 app.use(errorHandler);
 
 const PORT = env.PORT;
-app.listen(PORT, () => {
+const server = app.listen(PORT, () => {
   logger.info(`Server running on http://localhost:${PORT}`);
 });
+
+setupGracefulShutdown(server);
