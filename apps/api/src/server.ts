@@ -17,8 +17,6 @@ import {
   webhookLimiter,
 } from './middleware/rateLimiter.middleware';
 
-import { RegisterInput } from '@catchapi/shared';
-
 import authRoutes from './routes/auth.routes';
 import endpointRoutes from './routes/endpoint.routes';
 import catcherRoutes from './routes/catcher.routes';
@@ -59,17 +57,11 @@ app.use('/api/v1/endpoints', endpointRoutes);
 const openApiDocument = generateOpenAPIDocument();
 app.use('/api/docs', swaggerUi.serve, swaggerUi.setup(openApiDocument));
 
-app.get('/health', (req: Request, res: Response) => {
-  const dummyUser: RegisterInput = {
-    email: 'test@catchapi.com',
-    password: 'securepassword',
-    name: 'Admin',
-  };
-
+app.get('/health', (_req: Request, res: Response) => {
   res.status(200).json({
     status: 'ok',
-    message: 'CatchAPI Backend is running',
-    userTest: dummyUser,
+    uptime: process.uptime(),
+    timestamp: new Date().toISOString(),
   });
 });
 
