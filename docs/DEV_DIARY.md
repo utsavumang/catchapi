@@ -1,116 +1,58 @@
-# Development Diary
+# Dev Diary: CatchAPI
 
-## Day 1: Root Infrastructure & Guardrails
+### Day 1: Monorepo & Tooling Setup
 
-### 1. Monorepo Architecture
+- **Architecture:** Set up a `pnpm` workspace. Better than npm/yarn for strict dependency linking and avoiding phantom dependencies.
+- **Orchestration:** Added Turborepo. Caching builds saves a ton of time (e.g., won't recompile the shared package if only the frontend changed).
+- **Guardrails:** Hooked up Husky, lint-staged, and commitlint. Upgraded to ESLint v9's flat config.
+- **Hurdles:** Got stuck on a Windows vs. Unix line-ending issue (CRLF vs LF) that broke the Git hooks. Fixed it globally via `.gitattributes`.
 
-Opted for a `pnpm` workspace over a standard multi-folder MERN setup.
+### Day 2: Shared Types & Zod
 
-- **The Why:** It allows the React client, Node API, and future CLI tools to share native TypeScript interfaces and Zod schemas without publishing npm packages. `pnpm` was chosen over `npm` or `yarn` to prevent phantom dependencies and enforce strict workspace linking via `pnpm-workspace.yaml`.
+- **Single Source of Truth:** Created a private `@catchapi/shared` package.
+- **Validation:** Wrote the base schemas in Zod. Exporting inferred TS types means the frontend and backend will never fall out of sync on data shapes.
+- **Bundling:** Used `tsup` to bundle the package into CJS and ESM formats so both Express and Vite can consume it natively.
+- **Hurdles:** Hit a wall with TS 6 deprecating `node10` module resolution; updated to `bundler`. Also had to strict-type Zod records instead of using lazy `z.any()`.
 
-### 2. Task Orchestration
+### Day 3: App Scaffolding
 
-Integrated Turborepo (`turbo.json`).
+- **Backend:** Spun up a barebones Express app. Added basic security middleware (Helmet, CORS).
+- **Frontend:** Bootstrapped React with Vite.
+- **Tailwind v4:** Ran into setup friction because Tailwind just dropped v4, which nukes `postcss` in favor of a Vite plugin. Adapted to the new CSS-first standard.
+- **Pipeline:** Wired Turborepo to ensure the shared package builds _before_ the API and Client boot up. One `pnpm run dev` command handles everything.
 
-- **The Why:** As the workspace grows, running commands sequentially becomes a bottleneck. Turborepo understands the topological graph of the monorepo (e.g., building `packages/shared` before `apps/api`) and caches build outputs, ensuring we never recompile code that hasn't changed.
+### Day 4: Auth & State
 
-### 3. The Enforcers (Husky, Lint-Staged, Commitlint)
+- **Database:** Hooked up MongoDB via Mongoose. Used a pre-save hook for `bcrypt` so the DB structurally refuses to save raw passwords.
+- **JWTs:** Built stateless `/register` and `/login` routes. Kept it scalable without memory sessions.
+- **Client State:** Used React Hook Form + Zod resolvers on the frontend to match backend validation perfectly. Swapped Redux for Zustand to keep global state light.
+- **Network:** Wrote an Axios interceptor to automatically grab the JWT from Zustand and inject it into headers. Fixed a bunch of strict TS errors around `any` in catch blocks.
 
-Code quality relies on automation, not discipline.
+### Day 5: Webhook Ingestion Pipeline
 
-- **Pre-commit:** Husky intercepts commits and runs `lint-staged`. This targets only modified files, running them through Prettier and ESLint. If a file violates rules and cannot be auto-fixed, the commit is aborted.
-- **Commit-msg:** Enforces the Conventional Commits standard (e.g., `feat(api): ...`). Migrated to `.commitlintrc.json` to avoid Node module resolution conflicts on Windows.
-- **ESLint Flat Config:** Upgraded the root linter to ESLint v9's modern `eslint.config.mjs` flat config to natively support ES Modules.
+- **The Catcher:** Built the `/w/:urlId` wildcard route.
+- **Parser Middleware:** Webhooks send weird data. Had to configure Express to safely parse `raw`, `json`, `urlencoded`, and `text` bodies up to 512kb.
+- **Zod Middleware:** Wrote a generic Express middleware that takes any Zod schema and validates `req.body`/`req.query` before it hits the controller. Keeps controllers clean.
 
-### 4. Cross-Platform Hardening
+### Day 6: Management API
 
-- **CRLF vs LF:** Windows uses `CRLF` for line endings, while Unix (and Prettier) strictly use `LF`. This caused silent failures inside Git's bash emulator when executing Husky scripts. Resolved by enforcing `LF` globally via `.gitattributes` and manually converting hook files.
-- **Git Recovery:** Learned to use `git reset --soft HEAD~1` to step backward while keeping files staged, and `git reset --hard` to completely nuke a botched commit.
+- **Endpoints CRUD:** Built the routes for creating, fetching, and deleting webhook endpoints.
+- **Auth Middleware:** Wrote the guard that verifies the JWT, fetches the user, and attaches `req.user` to the Express request object so endpoints are properly tied to the logged-in user.
 
-## Day 2: The Shared Domain (Single Source of Truth)
+### Day 7: Data Models & Relations
 
-### 1. Scoped Package Initialization
+- **Schema Design:** Finalized the Mongoose models for `Endpoint` and `Payload`.
+- **Relational Logic:** Made sure Payloads reference an Endpoint ID, and Endpoints reference a User ID. Kept it strictly normalized.
+- **Controller Logic:** Wired the ingestion engine to actually save the incoming headers, method, query, and body into the Payload collection.
 
-Created the `@catchapi/shared` package to house all validation logic and type definitions.
+### Day 8: Pagination & Defense Layer
 
-- **The Why:** The API and React client must perfectly agree on data shapes (like webhook payloads). Centralizing this prevents silent runtime failures caused by out-of-sync types. The package is scoped (`@catchapi`) and explicitly flagged as `"private": true` in `package.json` to prevent accidental leakage to the public npm registry.
+- **Cursor Pagination:** Ditched standard offset pagination (`skip/limit`) because it gets insanely slow on large collections. Built an O(1) cursor-based system using MongoDB's `$lt` operator on timestamps and the "N+1 query" trick to detect if there's a next page.
+- **Rate Limiting:** Added `express-rate-limit`. Put a strict limit on the management UI to prevent brute force, and a high-capacity limit on the webhook ingestion route to handle traffic bursts without getting DDoS'd.
+- **NoSQL Defense:** Locked down the Mongoose query builders with strict TS interfaces so users can't pass MongoDB operators via the URL query string.
 
-### 2. Zod & Build-Time Inference
+### Day 9: Observability & Swagger
 
-Built the foundational schemas (`auth.schema.ts` and `endpoint.schema.ts`) using Zod.
-
-- **The Why:** Writing standalone TypeScript interfaces and separate validation logic violates DRY principles and creates synchronization risks. By writing the runtime validation schema in Zod and using `z.infer`, TypeScript automatically extracts the build-time interface. A single source of truth.
-
-### 3. Cross-Environment Bundling (`tsup`)
-
-Configured `tsup` (powered by `esbuild`) to compile the shared TypeScript code.
-
-- **The Why:** The monorepo has diverse consumers. The Node.js Express API might require CommonJS, while the Vite React app strictly uses ES Modules. `tsup` simultaneously bundles the raw TypeScript into `.js` (CJS), `.mjs` (ESM), and `.d.ts` (Type Declarations) formats, ensuring universal compatibility across the workspace.
-
-### 4. Architectural Friction & Upgrades
-
-The build process exposed several strictness and bleeding-edge versioning constraints that required global configuration updates.
-
-- **TypeScript 6.0 Module Resolution:** The `tsup` declaration build crashed because TypeScript 6 aggressively deprecated the legacy `node10` module resolution. Upgraded the root `tsconfig.base.json` to use `"moduleResolution": "bundler"`, aligning the workspace with the modern standard for bundler-driven environments.
-- **Strict Zod Records:** `z.record(z.any())` failed TS checks. Under modern strict typing, Zod requires explicit key types for records. Refactored the arbitrary payload schema to `z.record(z.string(), z.any())`.
-- **ESLint TS Integration:** The Git hook crashed because the root ESLint config didn't understand TypeScript syntax. Installed `typescript-eslint` and refactored the Flat Config (`eslint.config.mjs`) to natively merge standard JS recommended rules with TS recommended rules using the new `tseslint.config()` wrapper.
-
-## Day 3: Application Scaffolding & The Turborepo Pipeline
-
-### 1. The API Shell (Express)
-
-Scaffolded the barebones Express server in `apps/api`.
-
-- **The Why:** We separated the API logic from the monorepo root. Implemented early security middleware (`helmet` for HTTP headers, `cors` for cross-origin boundaries). Kept the server minimal to prep for database connections.
-
-### 2. The Frontend Shell (Vite + React + Tailwind v4)
-
-Bootstrapped the React client using Vite instead of Create React App.
-
-- **The Why:** Vite uses native ES Modules, meaning zero bundling during development. Server start times dropped to milliseconds.
-- **The Bleeding-Edge Friction:** Attempted to install Tailwind via the traditional PostCSS pipeline but hit a wall. Tailwind just released v4, which completely deprecates `tailwind.config.js` and PostCSS in favor of a lightning-fast, CSS-first Vite plugin (`@tailwindcss/vite`). Pivoted the architecture to the modern v4 standard.
-
-### 3. Blurring the Boundary (The Monorepo Win)
-
-Wired the React app to import the `@catchapi/shared` Zod schemas directly.
-
-- **The Why:** Historically, frontend form validation and backend route validation were duplicated logic. By linking the Vite app to the monorepo workspace, the React client now executes the exact same mathematical validation rules as the Express server, with zero network latency.
-
-### 4. The Orchestration Pipeline
-
-Updated `turbo.json` to orchestrate the entire workspace with a single `pnpm run dev` command.
-
-- **The Why:** Opening three terminals to build the shared package, start the API, and start the client is tedious and error-prone.
-- **The Guardrail:** Added `"dependsOn": ["^build"]` to the `dev` task. This acts as a topological lock: Turborepo looks at the dependency graph and guarantees that the `@catchapi/shared` Zod schemas are fully compiled _before_ it allows the Express and Vite servers to boot.
-
-## Day 4: The Identity Engine (End-to-End Auth)
-
-### 1. The Zero-Trust Database Layer (Backend)
-
-Integrated Mongoose and MongoDB, defining the User schema.
-
-- **The Why (Fat Models, Skinny Controllers):** Instead of hashing passwords in the routing controller, I utilized a Mongoose `pre('save')` hook with `bcryptjs`. This means the database structurally refuses to save plain-text passwords. Even if a junior dev writes a flawed registration controller in the future, the database protects itself.
-
-### 2. Stateless Authentication (Backend)
-
-Built the `/register` and `/login` controllers using JSON Web Tokens (JWT).
-
-- **The Why:** Opted for stateless JWTs over stateful memory sessions. The server doesn't have to keep a ledger of who is logged in; it simply verifies the cryptographic signature on incoming requests. This makes the API infinitely horizontally scalable. Both controllers ingest `req.body` through the shared Zod schemas to block malicious payloads at the boundary.
-
-### 3. Smart Forms (Frontend)
-
-Implemented `react-hook-form` paired with `@hookform/resolvers/zod` for the React UI.
-
-- **The Why:** Standard React forms cause massive re-renders on every keystroke. React Hook Form minimizes renders, and the Zod resolver acts as a translation layer. The frontend now perfectly enforces backend constraints (like password length or email formatting) before the user even clicks submit.
-
-### 4. Global State & Network Interceptors (Frontend)
-
-Replaced Redux with `zustand` for lightweight global state, and built an Axios interceptor.
-
-- **The Why:** Once a user logs in, every subsequent request needs the JWT token. Instead of manually attaching it to every fetch call, the Axios interceptor automatically dips into the Zustand global state, retrieves the token, and attaches it as a `Bearer` header right before the request leaves the browser.
-
-### 5. Strict TypeScript Friction
-
-The linter blocked commits due to `any` types in `catch` blocks and mismatched Mongoose `ObjectId` types.
-
-- **The Fix:** TypeScript caught genuine runtime risks. Replaced lazy `catch (error: any)` blocks with strict `if (error instanceof Error)` and `isAxiosError` type guards. Converted Mongoose `ObjectId` types safely using `.toString()` before JWT generation. The pipeline successfully prevented un-typed code from entering the main branch.
+- **JSON Logging:** Ripped out `console.log`. Swapped it for `pino` and `pino-http` for asynchronous, structured JSON logging that won't block the Node event loop.
+- **Docs:** Used `@asteasolutions/zod-to-openapi` to generate Swagger UI directly from the shared Zod schemas (SSOT).
+- **Monorepo Hell:** Spent hours fighting a dual-instance bug where Node loaded two separate versions of Zod into RAM.Purged the lockfile, externalized `zod` in `tsup`, downgraded to v7 of the bridge, and finally got the UI rendering perfectly.
