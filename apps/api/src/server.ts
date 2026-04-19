@@ -2,6 +2,7 @@ import express, { Request, Response } from 'express';
 import cors from 'cors';
 import helmet from 'helmet';
 import pinoHttp from 'pino-http';
+import mongoSanitize from 'express-mongo-sanitize';
 
 import { env } from './config/env';
 import { connectDB } from './config/db';
@@ -45,10 +46,17 @@ app.use(
     express.text({ type: ['text/*', 'application/xml'], limit: '512kb' }),
     express.raw({ type: '*/*', limit: '512kb' }),
   ],
+  mongoSanitize({ replaceWith: '_' }),
   catcherRoutes
 );
 
-app.use('/api', apiLimiter, cors({ origin: env.FRONTEND_URL }), express.json());
+app.use(
+  '/api',
+  apiLimiter,
+  cors({ origin: env.FRONTEND_URL }),
+  express.json(),
+  mongoSanitize()
+);
 
 app.use('/api/v1/auth', authRoutes);
 app.use('/api/v1/endpoints', endpointRoutes);

@@ -55,6 +55,9 @@ importers:
       express:
         specifier: ^5.2.1
         version: 5.2.1
+      express-mongo-sanitize:
+        specifier: ^2.2.0
+        version: 2.2.0
       express-rate-limit:
         specifier: ^8.3.2
         version: 8.3.2(express@5.2.1)
@@ -89,6 +92,9 @@ importers:
       '@types/express':
         specifier: ^5.0.6
         version: 5.0.6
+      '@types/express-mongo-sanitize':
+        specifier: ^2.1.2
+        version: 2.1.2
       '@types/jsonwebtoken':
         specifier: ^9.0.10
         version: 9.0.10
@@ -1536,6 +1542,13 @@ packages:
         integrity: sha512-dWHzHa2WqEXI/O1E9OjrocMTKJl2mSrEolh1Iomrv6U+JuNwaHXsXx9bLu5gG7BUWFIN0skIQJQ/L1rIex4X6w==,
       }
 
+  '@types/express-mongo-sanitize@2.1.2':
+    resolution:
+      {
+        integrity: sha512-a0Vy5Ivkc9iipHBgcnpRsAl3H/pM4gkL6mf5BqGVg4NsVJXlI6hwzle+UHS9O7oqUau+b6S+hzZ3tXQaAhLcmg==,
+      }
+    deprecated: This is a stub types definition. express-mongo-sanitize provides its own type definitions, so you do not need this installed.
+
   '@types/express-serve-static-core@5.1.1':
     resolution:
       {
@@ -2543,6 +2556,13 @@ packages:
         integrity: sha512-VyhnebXciFV2DESc+p6B+y0LjSm0krU4OgJN44qFAhBY0TJ+1V61tYD2+wHusZ6F9n5K+vl8k0sTy7PEfV4qpg==,
       }
     engines: { node: '>=16.17' }
+
+  express-mongo-sanitize@2.2.0:
+    resolution:
+      {
+        integrity: sha512-PZBs5nwhD6ek9ZuP+W2xmpvcrHwXZxD5GdieX2dsjPbAbH4azOkrHbycBud2QRU+YQF1CT+pki/lZGedHgo/dQ==,
+      }
+    engines: { node: '>=10' }
 
   express-rate-limit@8.3.2:
     resolution:
@@ -5484,6 +5504,10 @@ snapshots:
 
   '@types/estree@1.0.8': {}
 
+  '@types/express-mongo-sanitize@2.1.2':
+    dependencies:
+      express-mongo-sanitize: 2.2.0
+
   '@types/express-serve-static-core@5.1.1':
     dependencies:
       '@types/node': 22.19.17
@@ -6199,6 +6223,8 @@ snapshots:
       onetime: 6.0.0
       signal-exit: 4.1.0
       strip-final-newline: 3.0.0
+
+  express-mongo-sanitize@2.2.0: {}
 
   express-rate-limit@8.3.2(express@5.2.1):
     dependencies:
