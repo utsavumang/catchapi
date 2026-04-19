@@ -3,9 +3,11 @@ import {
   OpenAPIRegistry,
   OpenApiGeneratorV3,
 } from '@asteasolutions/zod-to-openapi';
-
 import { z, createEndpointSchema } from '@catchapi/shared';
+import { Application } from 'express';
+import swaggerUi from 'swagger-ui-express';
 
+// Extend Zod immediately at module load — before any schema is referenced
 extendZodWithOpenApi(z);
 
 const registry = new OpenAPIRegistry();
@@ -16,7 +18,8 @@ const bearerAuth = registry.registerComponent('securitySchemes', 'bearerAuth', {
   bearerFormat: 'JWT',
 });
 
-// Create Endpoint
+// ─── Endpoint Routes ──────────────────────────────────────────────────────────
+
 registry.registerPath({
   method: 'post',
   path: '/api/v1/endpoints',
@@ -32,29 +35,21 @@ registry.registerPath({
     },
   },
   responses: {
-    201: {
-      description: 'Endpoint created successfully',
-    },
-    400: {
-      description: 'Validation Error (Zod)',
-    },
+    201: { description: 'Endpoint created successfully' },
+    400: { description: 'Validation Error (Zod)' },
   },
 });
 
-// GET All Endpoints
 registry.registerPath({
   method: 'get',
   path: '/api/v1/endpoints',
   summary: 'Get all webhook endpoints for the authenticated user',
   security: [{ [bearerAuth.name]: [] }],
   responses: {
-    200: {
-      description: 'Returns an array of endpoints',
-    },
+    200: { description: 'Returns an array of endpoints' },
   },
 });
 
-// DELETE Endpoint
 registry.registerPath({
   method: 'delete',
   path: '/api/v1/endpoints/{id}',
@@ -68,16 +63,11 @@ registry.registerPath({
     }),
   },
   responses: {
-    204: {
-      description: 'Endpoint deleted successfully (No Content)',
-    },
-    404: {
-      description: 'Endpoint not found or unauthorized',
-    },
+    204: { description: 'Endpoint deleted successfully (No Content)' },
+    404: { description: 'Endpoint not found or unauthorized' },
   },
 });
 
-// GET Paginated Payloads
 registry.registerPath({
   method: 'get',
   path: '/api/v1/endpoints/{endpointId}/payloads',
@@ -103,15 +93,14 @@ registry.registerPath({
     }),
   },
   responses: {
-    200: {
-      description: 'Returns paginated payloads with a nextCursor',
-    },
+    200: { description: 'Returns paginated payloads with a nextCursor' },
   },
 });
 
-export const generateOpenAPIDocument = () => {
-  const generator = new OpenApiGeneratorV3(registry.definitions);
+// ─── Document Generator ───────────────────────────────────────────────────────
 
+const generateOpenAPIDocument = () => {
+  const generator = new OpenApiGeneratorV3(registry.definitions);
   return generator.generateDocument({
     openapi: '3.0.0',
     info: {
@@ -121,4 +110,11 @@ export const generateOpenAPIDocument = () => {
     },
     servers: [{ url: '/api/v1' }],
   });
+};
+
+// ─── Swagger Middleware Setup ─────────────────────────────────────────────────
+
+export const setupSwagger = (app: Application): void => {
+  const openApiDocument = generateOpenAPIDocument();
+  app.use('/api/docs', swaggerUi.serve, swaggerUi.setup(openApiDocument));
 };

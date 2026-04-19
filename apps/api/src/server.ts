@@ -2,11 +2,10 @@ import express, { Request, Response } from 'express';
 import cors from 'cors';
 import helmet from 'helmet';
 import pinoHttp from 'pino-http';
-import swaggerUi from 'swagger-ui-express';
 
 import { env } from './config/env';
 import { connectDB } from './config/db';
-import { generateOpenAPIDocument } from './config/swagger';
+import { setupSwagger } from './config/swagger';
 
 import { logger } from './utils/logger';
 import { setupGracefulShutdown } from './utils/shutdown';
@@ -54,8 +53,7 @@ app.use('/api', apiLimiter, cors({ origin: env.FRONTEND_URL }), express.json());
 app.use('/api/v1/auth', authRoutes);
 app.use('/api/v1/endpoints', endpointRoutes);
 
-const openApiDocument = generateOpenAPIDocument();
-app.use('/api/docs', swaggerUi.serve, swaggerUi.setup(openApiDocument));
+setupSwagger(app);
 
 app.get('/health', (_req: Request, res: Response) => {
   res.status(200).json({
