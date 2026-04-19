@@ -78,7 +78,7 @@ export const deleteEndpoint = catchAsync(
       );
     }
 
-    // For Later - Add logic to cascade delete all payloads associated with this endpoint.
+    // Cascading logic through mongoose hooks
 
     res.status(204).json({
       status: 'success',
