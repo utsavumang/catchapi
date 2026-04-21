@@ -22,18 +22,15 @@ export const LoginForm = () => {
     setServerError(null);
     try {
       const response = await api.post('/auth/login', data);
-
       setCredentials(response.data.token, {
         id: response.data._id,
         name: response.data.name,
         email: response.data.email,
       });
-
-      alert('Registration Successful! Check your console.');
-      console.log('Logged in user:', response.data);
+      // TODO: navigate to dashboard (routing not set up yet)
     } catch (error) {
       if (isAxiosError(error) && error.response) {
-        setServerError(error.response.data.message || 'Registration failed');
+        setServerError(error.response.data.message || 'Login failed');
       } else {
         setServerError('An unexpected error occurred');
       }
