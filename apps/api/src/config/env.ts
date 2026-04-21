@@ -9,6 +9,9 @@ const envSchema = z.object({
   JWT_SECRET: z
     .string()
     .min(10, 'JWT Secret must be at least 10 characters long'),
+  JWT_REFRESH_SECRET: z
+    .string()
+    .min(10, 'JWT Refresh Secret must be at least 10 characters long'),
   NODE_ENV: z
     .enum(['development', 'production', 'test'])
     .default('development'),
