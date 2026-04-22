@@ -3,6 +3,7 @@ import cors from 'cors';
 import helmet from 'helmet';
 import pinoHttp from 'pino-http';
 import mongoSanitize from 'express-mongo-sanitize';
+import cookieParser from 'cookie-parser';
 
 import { env } from './config/env';
 import { connectDB } from './config/db';
@@ -26,6 +27,7 @@ connectDB();
 const app = express();
 
 app.use(helmet());
+app.use(cookieParser());
 app.use(
   pinoHttp({
     logger,
@@ -53,7 +55,7 @@ app.use(
 app.use(
   '/api',
   apiLimiter,
-  cors({ origin: env.FRONTEND_URL }),
+  cors({ origin: env.FRONTEND_URL, credentials: true }),
   express.json(),
   mongoSanitize()
 );
