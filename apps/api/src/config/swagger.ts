@@ -33,7 +33,7 @@ const authResponseSchema = z
     email: z.string().email().openapi({ example: 'john@example.com' }),
     token: z.string().openapi({
       description:
-        'JWT Bearer token. Store this and send it in the Authorization header.',
+        'Short-lived JWT access token (15 minutes). Send this in the Authorization header. A refresh token is separately set as an httpOnly cookie.',
       example: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...',
     }),
   })
@@ -56,7 +56,8 @@ registry.registerPath({
   method: 'post',
   path: '/api/v1/auth/register',
   summary: 'Register a new user',
-  description: 'Creates a new user account and returns a JWT token on success.',
+  description:
+    'Creates a new user account. Returns a short-lived access token in the response body and sets a long-lived refresh token as an httpOnly cookie.',
   request: {
     body: {
       content: {
@@ -83,7 +84,8 @@ registry.registerPath({
   method: 'post',
   path: '/api/v1/auth/login',
   summary: 'Login with existing credentials',
-  description: 'Authenticates a user and returns a JWT token on success.',
+  description:
+    'Authenticates a user. Returns a short-lived access token in the response body and sets a long-lived refresh token as an httpOnly cookie.',
   request: {
     body: {
       content: {
@@ -103,6 +105,54 @@ registry.registerPath({
       },
     },
     401: { description: 'Invalid email or password' },
+  },
+});
+
+registry.registerPath({
+  method: 'post',
+  path: '/api/v1/auth/refresh',
+  summary: 'Refresh access token',
+  description:
+    'Issues a new access token using the refresh token stored in the httpOnly cookie. The refresh token is automatically rotated — a new one is set in the cookie and the old one is invalidated.',
+  responses: {
+    200: {
+      description: 'New access token issued successfully',
+      content: {
+        'application/json': {
+          schema: z.object({
+            token: z.string().openapi({
+              description: 'New JWT access token. Valid for 15 minutes.',
+              example: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...',
+            }),
+          }),
+        },
+      },
+    },
+    401: {
+      description: 'Refresh token missing, invalid, already used, or expired.',
+    },
+  },
+});
+
+registry.registerPath({
+  method: 'post',
+  path: '/api/v1/auth/logout',
+  summary: 'Logout current session',
+  description:
+    'Invalidates the refresh token in the database and clears the httpOnly cookie. The access token expires naturally within 15 minutes.',
+  security: [{ [bearerAuth.name]: [] }],
+  responses: {
+    200: {
+      description: 'Logged out successfully',
+      content: {
+        'application/json': {
+          schema: z.object({
+            status: z.string().openapi({ example: 'success' }),
+            message: z.string().openapi({ example: 'Logged out successfully' }),
+          }),
+        },
+      },
+    },
   },
 });
 
