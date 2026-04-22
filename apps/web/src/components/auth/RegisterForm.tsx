@@ -5,6 +5,7 @@ import { User, Mail, Lock } from 'lucide-react';
 import { useState } from 'react';
 import { api } from '@/lib/axios';
 import { useAuthStore } from '@/store/auth.store';
+import { useNavigate } from 'react-router-dom';
 import { isAxiosError } from 'axios';
 
 export const RegisterForm = () => {
@@ -18,6 +19,8 @@ export const RegisterForm = () => {
   } = useForm<RegisterInput>({
     resolver: zodResolver(registerSchema),
   });
+
+  const navigate = useNavigate();
 
   const onSubmit = async (data: RegisterInput) => {
     setServerError(null);
@@ -35,7 +38,7 @@ export const RegisterForm = () => {
         email: response.data.email,
       });
 
-      // TODO: navigate('/dashboard')
+      navigate('/dashboard');
     } catch (error) {
       if (isAxiosError(error) && error.response) {
         setServerError(error.response.data.message || 'Registration failed');

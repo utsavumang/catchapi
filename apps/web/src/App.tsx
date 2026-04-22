@@ -1,25 +1,53 @@
+import {
+  createBrowserRouter,
+  RouterProvider,
+  Navigate,
+} from 'react-router-dom';
 import { SilentRefresh } from '@/components/common/SilentRefresh';
-import { useAuthStore } from '@/store/auth.store';
-import { RegisterForm } from '@/components/auth/RegisterForm';
-import { LoginForm } from '@/components/auth/LoginForm';
+import { ProtectedRoute } from '@/components/common/ProtectedRoute';
+import { PublicRoute } from '@/components/common/PublicRoute';
+import { DashboardLayout } from '@/components/layout/DashboardLayout';
+import { LoginPage } from '@/pages/LoginPage';
+import { RegisterPage } from '@/pages/RegisterPage';
+import { EndpointsPage } from '@/pages/EndpointsPage';
+import { EndpointDetailPage } from '@/pages/EndpointDetailPage';
+import { NotFoundPage } from '@/pages/NotFoundPage';
+
+const router = createBrowserRouter([
+  {
+    path: '/',
+    element: <Navigate to="/dashboard" replace />,
+  },
+
+  {
+    element: <PublicRoute />,
+    children: [
+      { path: '/login', element: <LoginPage /> },
+      { path: '/register', element: <RegisterPage /> },
+    ],
+  },
+
+  {
+    element: <ProtectedRoute />,
+    children: [
+      {
+        element: <DashboardLayout />,
+        children: [
+          { path: '/dashboard', element: <EndpointsPage /> },
+          { path: '/dashboard/:urlId', element: <EndpointDetailPage /> },
+        ],
+      },
+    ],
+  },
+
+  { path: '*', element: <NotFoundPage /> },
+]);
 
 function App() {
-  const isLoading = useAuthStore((state) => state.isLoading);
-
   return (
     <>
       <SilentRefresh />
-
-      {isLoading ? (
-        <div className="min-h-screen bg-background" />
-      ) : (
-        <div className="min-h-screen bg-background flex items-center justify-center p-4">
-          <div className="flex flex-col lg:flex-row gap-8 items-start w-full max-w-5xl justify-center">
-            <LoginForm />
-            <RegisterForm />
-          </div>
-        </div>
-      )}
+      <RouterProvider router={router} />
     </>
   );
 }
