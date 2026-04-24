@@ -60,7 +60,7 @@ export const RegisterForm = () => {
           error={errors.name?.message}
         >
           <Input
-            {...register('name')}
+            {...registerField('name')}
             type="text"
             placeholder="John Doe"
             className="pl-10"

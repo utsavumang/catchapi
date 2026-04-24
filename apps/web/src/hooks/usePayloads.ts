@@ -22,10 +22,12 @@ export const useGetPayloads = ({
         method,
         limit,
       }),
-    initialPageParam: undefined,
+    initialPageParam: undefined as string | undefined,
     getNextPageParam: (lastPage) => {
       // If there are more pages, return the cursor for the next fetch
-      return lastPage.hasMore ? lastPage.nextCursor : undefined;
+      return lastPage.hasMore && lastPage.nextCursor
+        ? lastPage.nextCursor
+        : undefined;
     },
     // Flatten all pages into a single array
     select: (data) => ({
@@ -33,7 +35,7 @@ export const useGetPayloads = ({
       pageParams: data.pageParams,
       payloads: data.pages.flatMap((page) => page.data as Payload[]),
       hasMore: data.pages[data.pages.length - 1]?.hasMore ?? false,
-      nextCursor: data.pages[data.pages.length - 1]?.nextCursor ?? null,
+      nextCursor: data.pages[data.pages.length - 1]?.nextCursor ?? undefined,
     }),
   });
 };
