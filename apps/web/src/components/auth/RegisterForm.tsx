@@ -5,7 +5,8 @@ import { User, Mail, Lock } from 'lucide-react';
 import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { isAxiosError } from 'axios';
-import { api } from '@/lib/axios';
+
+import { registerUser } from '@/lib/api/auth.api';
 import { useAuthStore } from '@/store/auth.store';
 import { FormField } from '@/components/common/FormField';
 import { Input } from '@/components/ui/input';
@@ -27,19 +28,12 @@ export const RegisterForm = () => {
   const onSubmit = async (data: RegisterInput) => {
     setServerError(null);
     try {
-      const response = await api.post<{
-        _id: string;
-        name: string;
-        email: string;
-        token: string;
-      }>('/auth/register', data);
-
-      setCredentials(response.data.token, {
-        id: response.data._id,
-        name: response.data.name,
-        email: response.data.email,
+      const responseData = await registerUser(data);
+      setCredentials(responseData.token, {
+        id: responseData._id,
+        name: responseData.name,
+        email: responseData.email,
       });
-
       navigate('/dashboard');
     } catch (error) {
       if (isAxiosError(error) && error.response) {

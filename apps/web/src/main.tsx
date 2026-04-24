@@ -9,7 +9,6 @@ import { ReactQueryDevtools } from '@tanstack/react-query-devtools';
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
-    {' '}
     <QueryClientProvider client={queryClient}>
       <App />
       <Toaster richColors position="bottom-right" />

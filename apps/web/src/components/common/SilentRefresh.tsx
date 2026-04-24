@@ -1,5 +1,6 @@
 import { useEffect } from 'react';
-import { api } from '@/lib/axios';
+
+import { refreshToken } from '@/lib/api/auth.api';
 import { useAuthStore } from '@/store/auth.store';
 
 export const SilentRefresh = () => {
@@ -18,8 +19,8 @@ export const SilentRefresh = () => {
       }
 
       try {
-        const response = await api.post<{ token: string }>('/auth/refresh');
-        setToken(response.data.token);
+        const data = await refreshToken();
+        setToken(data.token);
       } catch {
         logout();
       } finally {
