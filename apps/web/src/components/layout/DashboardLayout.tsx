@@ -24,7 +24,7 @@ export const DashboardLayout = () => {
           <Webhook className="w-4 h-4 text-primary-foreground" />
         </div>
         <span className="text-foreground font-bold text-lg tracking-tight">
-          CatchAPI
+          Catch<span className="text-primary">API</span>
         </span>
       </div>
 
