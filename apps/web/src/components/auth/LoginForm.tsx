@@ -3,45 +3,37 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { loginSchema, LoginInput } from '@catchapi/shared';
 import { Mail, Lock } from 'lucide-react';
 import { useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link } from 'react-router-dom';
 import { isAxiosError } from 'axios';
 
-import { loginUser } from '@/lib/api/auth.api';
-import { useAuthStore } from '@/store/auth.store';
 import { FormField } from '@/components/common/FormField';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
+import { useLogin } from '@/hooks/useAuth';
 
 export const LoginForm = () => {
   const [serverError, setServerError] = useState<string | null>(null);
-  const { setCredentials } = useAuthStore();
-  const navigate = useNavigate();
+  const { mutate: login, isPending } = useLogin();
 
   const {
     register,
     handleSubmit,
-    formState: { errors, isSubmitting },
+    formState: { errors },
   } = useForm<LoginInput>({
     resolver: zodResolver(loginSchema),
   });
 
   const onSubmit = async (data: LoginInput) => {
     setServerError(null);
-    try {
-      const responseData = await loginUser(data);
-      setCredentials(responseData.token, {
-        id: responseData._id,
-        name: responseData.name,
-        email: responseData.email,
-      });
-      navigate('/dashboard');
-    } catch (error) {
-      if (isAxiosError(error) && error.response) {
-        setServerError(error.response.data.message || 'Login failed');
-      } else {
-        setServerError('An unexpected error occurred');
-      }
-    }
+    login(data, {
+      onError: (error) => {
+        if (isAxiosError(error) && error.response) {
+          setServerError(error.response.data.message || 'Login failed');
+        } else {
+          setServerError('An unexpected error occurred');
+        }
+      },
+    });
   };
 
   return (
@@ -88,8 +80,8 @@ export const LoginForm = () => {
           />
         </FormField>
 
-        <Button type="submit" disabled={isSubmitting} className="w-full">
-          {isSubmitting ? 'Signing in...' : 'Sign In'}
+        <Button type="submit" disabled={isPending} className="w-full">
+          {isPending ? 'Signing in...' : 'Sign In'}
         </Button>
       </form>
 

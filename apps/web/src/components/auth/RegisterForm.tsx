@@ -3,45 +3,37 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { registerSchema, RegisterInput } from '@catchapi/shared';
 import { User, Mail, Lock } from 'lucide-react';
 import { useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link } from 'react-router-dom';
 import { isAxiosError } from 'axios';
 
-import { registerUser } from '@/lib/api/auth.api';
-import { useAuthStore } from '@/store/auth.store';
 import { FormField } from '@/components/common/FormField';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
+import { useRegister } from '@/hooks/useAuth';
 
 export const RegisterForm = () => {
   const [serverError, setServerError] = useState<string | null>(null);
-  const { setCredentials } = useAuthStore();
-  const navigate = useNavigate();
+  const { mutate: registerMutation, isPending } = useRegister();
 
   const {
-    register,
+    register: registerField,
     handleSubmit,
-    formState: { errors, isSubmitting },
+    formState: { errors },
   } = useForm<RegisterInput>({
     resolver: zodResolver(registerSchema),
   });
 
-  const onSubmit = async (data: RegisterInput) => {
+  const onSubmit = (data: RegisterInput) => {
     setServerError(null);
-    try {
-      const responseData = await registerUser(data);
-      setCredentials(responseData.token, {
-        id: responseData._id,
-        name: responseData.name,
-        email: responseData.email,
-      });
-      navigate('/dashboard');
-    } catch (error) {
-      if (isAxiosError(error) && error.response) {
-        setServerError(error.response.data.message || 'Registration failed');
-      } else {
-        setServerError('An unexpected error occurred');
-      }
-    }
+    registerMutation(data, {
+      onError: (error) => {
+        if (isAxiosError(error) && error.response) {
+          setServerError(error.response.data.message || 'Registration failed');
+        } else {
+          setServerError('An unexpected error occurred');
+        }
+      },
+    });
   };
 
   return (
@@ -81,7 +73,7 @@ export const RegisterForm = () => {
           error={errors.email?.message}
         >
           <Input
-            {...register('email')}
+            {...registerField('email')}
             type="email"
             placeholder="you@example.com"
             className="pl-10"
@@ -94,15 +86,15 @@ export const RegisterForm = () => {
           error={errors.password?.message}
         >
           <Input
-            {...register('password')}
+            {...registerField('password')}
             type="password"
             placeholder="••••••••"
             className="pl-10"
           />
         </FormField>
 
-        <Button type="submit" disabled={isSubmitting} className="w-full">
-          {isSubmitting ? 'Creating account...' : 'Sign Up'}
+        <Button type="submit" disabled={isPending} className="w-full">
+          {isPending ? 'Creating account...' : 'Sign Up'}
         </Button>
       </form>
 
