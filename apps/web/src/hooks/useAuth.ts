@@ -4,6 +4,7 @@ import { LoginInput, RegisterInput } from '@catchapi/shared';
 import { loginUser, registerUser, logoutUser } from '@/lib/api/auth.api';
 import { useAuthStore } from '@/store/auth.store';
 import { queryClient } from '@/lib/queryClient';
+import { ROUTES } from '@/lib/constants';
 
 export const useLogin = () => {
   const { setCredentials } = useAuthStore();
@@ -17,7 +18,7 @@ export const useLogin = () => {
         name: responseData.name,
         email: responseData.email,
       });
-      navigate('/dashboard');
+      navigate(ROUTES.DASHBOARD);
     },
   });
 };
@@ -34,7 +35,7 @@ export const useRegister = () => {
         name: responseData.name,
         email: responseData.email,
       });
-      navigate('/dashboard');
+      navigate(ROUTES.DASHBOARD);
     },
   });
 };
@@ -49,7 +50,7 @@ export const useLogout = () => {
       // whether the API call succeeded or failed
       logout();
       queryClient.clear();
-      navigate('/login');
+      navigate(ROUTES.LOGIN);
     },
   });
 };

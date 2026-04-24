@@ -11,6 +11,8 @@ import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { useRegister } from '@/hooks/useAuth';
 
+import { ROUTES } from '@/lib/constants';
+
 export const RegisterForm = () => {
   const [serverError, setServerError] = useState<string | null>(null);
   const { mutate: registerMutation, isPending } = useRegister();
@@ -100,7 +102,10 @@ export const RegisterForm = () => {
 
       <p className="mt-6 text-center text-sm text-muted-foreground">
         Already have an account?{' '}
-        <Link to="/login" className="text-primary hover:underline font-medium">
+        <Link
+          to={ROUTES.LOGIN}
+          className="text-primary hover:underline font-medium"
+        >
           Sign in
         </Link>
       </p>

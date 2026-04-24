@@ -1,16 +1,20 @@
 import { Outlet } from 'react-router-dom';
-import { Webhook, Menu, X } from 'lucide-react';
+import { Webhook, Menu, X, LogOut } from 'lucide-react';
 import { useState } from 'react';
 import { NavItem } from '@/components/layout/NavItem';
 import { UserAvatar } from '@/components/layout/UserAvatar';
 import { Button } from '@/components/ui/button';
 import { Separator } from '@/components/ui/separator';
+import { ConfirmDialog } from '@/components/common/ConfirmDialog';
 import { useAuthStore } from '@/store/auth.store';
+import { useLogout } from '@/hooks/useAuth';
 import { ROUTES } from '@/lib/constants';
 
 export const DashboardLayout = () => {
   const user = useAuthStore((state) => state.user);
   const [mobileOpen, setMobileOpen] = useState(false);
+  const [logoutOpen, setLogoutOpen] = useState(false);
+  const { mutate: logout, isPending: isLoggingOut } = useLogout();
 
   const sidebarContent = (
     <div className="flex flex-col h-full">
@@ -55,13 +59,14 @@ export const DashboardLayout = () => {
             </div>
           </div>
         )}
-        {/* Todo - Wire Logout */}
         <Button
           variant="ghost"
           size="sm"
-          className="w-full justify-start text-muted-foreground hover:text-foreground"
-          disabled
+          className="w-full justify-start text-muted-foreground hover:text-destructive hover:bg-destructive/10"
+          onClick={() => setLogoutOpen(true)}
+          disabled={isLoggingOut}
         >
+          <LogOut className="w-4 h-4 mr-2" />
           Sign out
         </Button>
       </div>
@@ -78,12 +83,10 @@ export const DashboardLayout = () => {
       {/* ─── Mobile Sidebar Overlay ───────────────────────────────────── */}
       {mobileOpen && (
         <div className="fixed inset-0 z-40 md:hidden">
-          {/* Backdrop */}
           <div
             className="absolute inset-0 bg-background/80 backdrop-blur-sm"
             onClick={() => setMobileOpen(false)}
           />
-          {/* Sidebar panel */}
           <aside className="absolute left-0 top-0 h-full w-60 bg-card border-r border-border z-50">
             {sidebarContent}
           </aside>
@@ -92,7 +95,6 @@ export const DashboardLayout = () => {
 
       {/* ─── Main Content ─────────────────────────────────────────────── */}
       <div className="flex-1 flex flex-col min-w-0">
-        {/* Mobile topbar */}
         <div className="md:hidden flex items-center gap-3 px-4 py-3 border-b border-border bg-card">
           <Button
             variant="ghost"
@@ -108,11 +110,23 @@ export const DashboardLayout = () => {
           <span className="font-bold text-foreground">CatchAPI</span>
         </div>
 
-        {/* Page content */}
         <main className="flex-1 overflow-auto">
           <Outlet />
         </main>
       </div>
+
+      {/* ─── Logout Confirmation ──────────────────────────────────────── */}
+      <ConfirmDialog
+        open={logoutOpen}
+        onOpenChange={setLogoutOpen}
+        title="Sign out"
+        description="Are you sure you want to sign out? You will need to log in again to access your dashboard."
+        confirmLabel="Sign out"
+        cancelLabel="Cancel"
+        variant="default"
+        isLoading={isLoggingOut}
+        onConfirm={() => logout()}
+      />
     </div>
   );
 };

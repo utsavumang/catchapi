@@ -1,5 +1,6 @@
 import axios from 'axios';
 import { useAuthStore } from '@/store/auth.store';
+import { ROUTES } from '@/lib/constants';
 
 export const api = axios.create({
   baseURL: import.meta.env.VITE_API_URL,
@@ -43,7 +44,7 @@ api.interceptors.response.use(
     } catch {
       // Refresh failed, session is unrecoverable
       useAuthStore.getState().logout();
-      window.location.href = '/login';
+      window.location.href = ROUTES.LOGIN;
       return Promise.reject(error);
     }
   }

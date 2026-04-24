@@ -11,6 +11,8 @@ import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { useLogin } from '@/hooks/useAuth';
 
+import { ROUTES } from '@/lib/constants';
+
 export const LoginForm = () => {
   const [serverError, setServerError] = useState<string | null>(null);
   const { mutate: login, isPending } = useLogin();
@@ -88,7 +90,7 @@ export const LoginForm = () => {
       <p className="mt-6 text-center text-sm text-muted-foreground">
         Don't have an account?{' '}
         <Link
-          to="/register"
+          to={ROUTES.REGISTER}
           className="text-primary hover:underline font-medium"
         >
           Create one
