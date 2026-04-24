@@ -25,24 +25,7 @@ export const queryKeys = {
   },
 } as const;
 
-// ─── API Endpoints ────────────────────────────────────────────────────────────
-export const API = {
-  AUTH: {
-    LOGIN: '/auth/login',
-    REGISTER: '/auth/register',
-    LOGOUT: '/auth/logout',
-    REFRESH: '/auth/refresh',
-    ME: '/auth/me',
-  },
-  ENDPOINTS: {
-    BASE: '/endpoints',
-    BY_ID: (id: string) => `/endpoints/${id}`,
-    PAYLOADS: (endpointId: string) => `/endpoints/${endpointId}/payloads`,
-  },
-} as const;
-
 // ─── UI Constants ─────────────────────────────────────────────────────────────
 export const UI = {
-  SIDEBAR_WIDTH: '240px',
   PAYLOAD_PAGE_SIZE: 50,
 } as const;
