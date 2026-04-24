@@ -2,7 +2,6 @@ import express, { Request, Response } from 'express';
 import cors from 'cors';
 import helmet from 'helmet';
 import pinoHttp from 'pino-http';
-import mongoSanitize from 'express-mongo-sanitize';
 import cookieParser from 'cookie-parser';
 
 import { env } from './config/env';
@@ -48,7 +47,6 @@ app.use(
     express.text({ type: ['text/*', 'application/xml'], limit: '512kb' }),
     express.raw({ type: '*/*', limit: '512kb' }),
   ],
-  mongoSanitize({ replaceWith: '_' }),
   catcherRoutes
 );
 
@@ -56,8 +54,7 @@ app.use(
   '/api',
   apiLimiter,
   cors({ origin: env.FRONTEND_URL, credentials: true }),
-  express.json(),
-  mongoSanitize()
+  express.json()
 );
 
 app.use('/api/v1/auth', authRoutes);

@@ -40,8 +40,6 @@ const endpointSchema = new mongoose.Schema(
   }
 );
 
-endpointSchema.index({ urlId: 1 });
-
 endpointSchema.post('findOneAndDelete', async (doc) => {
   if (doc) {
     await Payload.deleteMany({ endpointId: doc._id });
