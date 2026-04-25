@@ -22,13 +22,11 @@ export const EndpointCard = ({ endpoint }: EndpointCardProps) => {
   const { mutate: deleteEndpoint, isPending: isDeleting } = useDeleteEndpoint();
 
   const handleCopy = async (e: React.MouseEvent) => {
-    // Stop propagation so clicking copy doesn't navigate to the detail page
     e.stopPropagation();
     try {
       await navigator.clipboard.writeText(endpoint.fullUrl);
       setCopied(true);
       toast.success('Webhook URL copied to clipboard');
-      // Reset the copied state after 2 seconds
       setTimeout(() => setCopied(false), 2000);
     } catch {
       toast.error('Failed to copy URL');
@@ -45,7 +43,6 @@ export const EndpointCard = ({ endpoint }: EndpointCardProps) => {
       onSuccess: () => {
         toast.success('Endpoint deleted successfully');
         setDeleteOpen(false);
-        // If currently viewing this endpoint's detail page, navigate back
         if (pathname.includes(endpoint.urlId)) {
           navigate(ROUTES.DASHBOARD);
         }
@@ -75,7 +72,7 @@ export const EndpointCard = ({ endpoint }: EndpointCardProps) => {
               </p>
             )}
           </div>
-          {/* Delete button — only visible on hover */}
+          {/* Delete button*/}
           <Button
             variant="ghost"
             size="icon"
@@ -93,7 +90,7 @@ export const EndpointCard = ({ endpoint }: EndpointCardProps) => {
 
         {/* ─── Webhook URL ───────────────────────────────────────────── */}
         <div
-          className="flex items-center gap-2 px-3 py-2 rounded-md bg-secondary border border-border"
+          className="flex items-center gap-2 px-3 py-2 rounded-md bg-background border border-border cursor-text"
           onClick={(e) => e.stopPropagation()}
         >
           <code className="flex-1 text-xs text-muted-foreground font-mono truncate">
@@ -102,7 +99,7 @@ export const EndpointCard = ({ endpoint }: EndpointCardProps) => {
           <Button
             variant="ghost"
             size="icon"
-            className="shrink-0 w-7 h-7 text-muted-foreground hover:text-foreground"
+            className="shrink-0 w-7 h-7 text-muted-foreground hover:text-foreground cursor-pointer"
             onClick={handleCopy}
           >
             {copied ? (
