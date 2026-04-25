@@ -1,12 +1,15 @@
+import { useState } from 'react';
 import { Webhook } from 'lucide-react';
 import { PageHeader } from '@/components/common/PageHeader';
 import { EmptyState } from '@/components/common/EmptyState';
 import { EndpointCard } from '@/components/endpoints/EndpointCard';
 import { EndpointSkeleton } from '@/components/endpoints/EndpointSkeleton';
+import { CreateEndpointDialog } from '@/components/endpoints/CreateEndpointDialog';
 import { Button } from '@/components/ui/button';
 import { useGetEndpoints } from '@/hooks/useEndpoints';
 
 export const EndpointsPage = () => {
+  const [createOpen, setCreateOpen] = useState(false);
   const { data, isPending, isError, refetch } = useGetEndpoints();
 
   const endpoints = data?.data ?? [];
@@ -17,8 +20,7 @@ export const EndpointsPage = () => {
         title="Endpoints"
         description="Manage your webhook endpoints and inspect incoming payloads."
         action={
-          // Create button wired in Part 6.2
-          <Button disabled>New Endpoint</Button>
+          <Button onClick={() => setCreateOpen(true)}>New Endpoint</Button>
         }
       />
 
@@ -59,6 +61,8 @@ export const EndpointsPage = () => {
           ))}
         </div>
       )}
+
+      <CreateEndpointDialog open={createOpen} onOpenChange={setCreateOpen} />
     </div>
   );
 };
