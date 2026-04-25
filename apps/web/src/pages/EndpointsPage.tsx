@@ -49,7 +49,9 @@ export const EndpointsPage = () => {
           icon={<Webhook className="w-12 h-12" />}
           title="No endpoints yet"
           description="Create your first webhook endpoint to start catching incoming requests."
-          action={<Button disabled>New Endpoint</Button>}
+          action={
+            <Button onClick={() => setCreateOpen(true)}>New Endpoint</Button>
+          }
         />
       )}
 
