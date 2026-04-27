@@ -61,6 +61,37 @@ export const getEndpoints = catchAsync(
   }
 );
 
+// @desc    Get a single endpoint by ID
+// @route   GET /api/v1/endpoints/:id
+// @access  Private
+export const getEndpoint = catchAsync(
+  async (req: AuthRequest, res: Response) => {
+    const endpoint = await Endpoint.findOne({
+      urlId: req.params.id,
+      userId: req.user!._id,
+    });
+
+    if (!endpoint) {
+      throw new AppError('Endpoint not found or unauthorized', 404);
+    }
+
+    const fullUrl = `${req.protocol}://${req.get('host')}/w/${endpoint.urlId}`;
+
+    res.status(200).json({
+      status: 'success',
+      data: {
+        _id: endpoint._id,
+        urlId: endpoint.urlId,
+        fullUrl,
+        name: endpoint.name,
+        description: endpoint.description,
+        userId: endpoint.userId,
+        createdAt: endpoint.createdAt,
+      },
+    });
+  }
+);
+
 // @desc    Delete an endpoint
 // @route   DELETE /api/v1/endpoints/:id
 // @access  Private

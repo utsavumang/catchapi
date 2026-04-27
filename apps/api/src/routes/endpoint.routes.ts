@@ -2,6 +2,7 @@ import express from 'express';
 import {
   createEndpoint,
   getEndpoints,
+  getEndpoint,
   deleteEndpoint,
 } from '../controllers/endpoint.controller';
 import { getPayloads } from '../controllers/payload.controller';
@@ -20,6 +21,8 @@ router.post(
 );
 
 router.get('/', protect, getEndpoints);
+
+router.get('/:id', protect, getEndpoint);
 
 router.delete('/:id', protect, deleteEndpoint);
 

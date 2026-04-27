@@ -9,6 +9,13 @@ export const getEndpoints = async (): Promise<
   return response.data;
 };
 
+export const getEndpoint = async (urlId: string): Promise<EndpointWithUrl> => {
+  const response = await api.get<{ status: string; data: EndpointWithUrl }>(
+    `/endpoints/${urlId}`
+  );
+  return response.data.data;
+};
+
 export const createEndpoint = async (
   data: CreateEndpointInput
 ): Promise<EndpointWithUrl> => {

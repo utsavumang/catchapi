@@ -209,6 +209,24 @@ registry.registerPath({
 });
 
 registry.registerPath({
+  method: 'get',
+  path: '/api/v1/endpoints/{id}',
+  summary: 'Get a single endpoint by ID',
+  security: [{ [bearerAuth.name]: [] }],
+  request: {
+    params: z.object({
+      id: z
+        .string()
+        .openapi({ description: 'The MongoDB ObjectId of the endpoint' }),
+    }),
+  },
+  responses: {
+    200: { description: 'Returns the endpoint object' },
+    404: { description: 'Endpoint not found or unauthorized' },
+  },
+});
+
+registry.registerPath({
   method: 'delete',
   path: '/api/v1/endpoints/{id}',
   summary: 'Delete a specific endpoint',
