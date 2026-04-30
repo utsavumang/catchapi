@@ -11,10 +11,6 @@ import { Payload } from '@/types';
 
 interface PayloadListProps {
   endpointId: string;
-}
-
-interface PayloadListProps {
-  endpointId: string;
   selectedPayload: Payload | null;
   onSelectPayload: (payload: Payload) => void;
 }
