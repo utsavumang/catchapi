@@ -3,16 +3,27 @@ import { Inbox } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { EmptyState } from '@/components/common/EmptyState';
 import { PayloadSkeleton } from '@/components/payloads/PayloadSkeleton';
-import { MethodFilter } from '@/components/payloads/MethodFilter';
 import { useGetPayloads } from '@/hooks/usePayloads';
 import { UI } from '@/lib/constants';
 import { MethodFilter, HttpMethod } from '@/components/payloads/MethodFilter';
+import { PayloadCard } from '@/components/payloads/PayloadCard';
+import { Payload } from '@/types';
 
 interface PayloadListProps {
   endpointId: string;
 }
 
-export const PayloadList = ({ endpointId }: PayloadListProps) => {
+interface PayloadListProps {
+  endpointId: string;
+  selectedPayload: Payload | null;
+  onSelectPayload: (payload: Payload) => void;
+}
+
+export const PayloadList = ({
+  endpointId,
+  selectedPayload,
+  onSelectPayload,
+}: PayloadListProps) => {
   const [selectedMethod, setSelectedMethod] = useState<HttpMethod | undefined>(
     undefined
   );
@@ -35,7 +46,6 @@ export const PayloadList = ({ endpointId }: PayloadListProps) => {
 
   return (
     <div className="space-y-4">
-      {/* ─── Header ────────────────────────────────────────────────── */}
       <div className="flex items-center justify-between gap-4 flex-wrap">
         <div>
           <h2 className="text-lg font-semibold text-foreground">
@@ -47,10 +57,8 @@ export const PayloadList = ({ endpointId }: PayloadListProps) => {
         </div>
       </div>
 
-      {/* ─── Method Filter ─────────────────────────────────────────── */}
       <MethodFilter selected={selectedMethod} onChange={setSelectedMethod} />
 
-      {/* ─── Loading State ─────────────────────────────────────────── */}
       {isPending && (
         <div className="space-y-2">
           {Array.from({ length: 5 }).map((_, i) => (
@@ -59,7 +67,6 @@ export const PayloadList = ({ endpointId }: PayloadListProps) => {
         </div>
       )}
 
-      {/* ─── Error State ───────────────────────────────────────────── */}
       {isError && (
         <div className="flex flex-col items-center gap-3 py-12 text-center">
           <p className="text-muted-foreground text-sm">
@@ -71,7 +78,6 @@ export const PayloadList = ({ endpointId }: PayloadListProps) => {
         </div>
       )}
 
-      {/* ─── Empty State ───────────────────────────────────────────── */}
       {!isPending && !isError && payloads.length === 0 && (
         <EmptyState
           icon={<Inbox className="w-10 h-10" />}
@@ -84,25 +90,19 @@ export const PayloadList = ({ endpointId }: PayloadListProps) => {
         />
       )}
 
-      {/* ─── Payload List ──────────────────────────────────────────── */}
       {!isPending && !isError && payloads.length > 0 && (
         <div className="space-y-2">
           {payloads.map((payload) => (
-            // PayloadCard built in Part 7.3 — placeholder for now
-            <div
+            <PayloadCard
               key={payload._id}
-              className="flex items-center gap-4 px-4 py-3 rounded-lg border border-border bg-card text-sm text-muted-foreground"
-            >
-              <span className="font-mono font-semibold text-xs">
-                {payload.method}
-              </span>
-              <span className="truncate">{payload._id}</span>
-            </div>
+              payload={payload}
+              isSelected={selectedPayload?._id === payload._id}
+              onSelect={onSelectPayload}
+            />
           ))}
         </div>
       )}
 
-      {/* ─── Load More ─────────────────────────────────────────────── */}
       {hasMore && (
         <div className="flex justify-center pt-2">
           <Button

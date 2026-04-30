@@ -1,16 +1,19 @@
 import { useParams, useNavigate } from 'react-router-dom';
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { EndpointHeader } from '@/components/endpoints/EndpointHeader';
 import { PayloadList } from '@/components/payloads/PayloadList';
+import { PayloadInspector } from '@/components/payloads/PayloadInspector';
 import { Separator } from '@/components/ui/separator';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useGetEndpoint } from '@/hooks/useEndpoints';
+import { Payload } from '@/types';
 import { ROUTES } from '@/lib/constants';
 
 export const EndpointDetailPage = () => {
   const { urlId } = useParams<{ urlId: string }>();
   const navigate = useNavigate();
   const { data: endpoint, isPending, isError } = useGetEndpoint(urlId ?? '');
+  const [selectedPayload, setSelectedPayload] = useState<Payload | null>(null);
 
   useEffect(() => {
     if (isError) {
@@ -18,8 +21,13 @@ export const EndpointDetailPage = () => {
     }
   }, [isError, navigate]);
 
+  useEffect(() => {
+    setSelectedPayload(null);
+  }, [urlId]);
+
   return (
-    <div className="p-6 max-w-5xl mx-auto space-y-6">
+    <div className="p-6 max-w-7xl mx-auto space-y-6">
+      {/* ─── Loading State ───────────────────────────────────────────── */}
       {isPending && (
         <div className="space-y-4">
           <div className="flex items-center gap-1.5">
@@ -36,7 +44,34 @@ export const EndpointDetailPage = () => {
         <>
           <EndpointHeader endpoint={endpoint} />
           <Separator />
-          <PayloadList endpointId={endpoint._id} />
+
+          {/* ─── Split Panel Layout ──────────────────────────────────── */}
+          <div
+            className={
+              selectedPayload
+                ? 'grid grid-cols-1 lg:grid-cols-2 gap-6 items-start'
+                : 'block'
+            }
+          >
+            {/* Payload list */}
+            <div>
+              <PayloadList
+                endpointId={endpoint._id}
+                selectedPayload={selectedPayload}
+                onSelectPayload={setSelectedPayload}
+              />
+            </div>
+
+            {/* Inspector */}
+            {selectedPayload && (
+              <div className="lg:sticky lg:top-6">
+                <PayloadInspector
+                  payload={selectedPayload}
+                  onClose={() => setSelectedPayload(null)}
+                />
+              </div>
+            )}
+          </div>
         </>
       )}
     </div>
