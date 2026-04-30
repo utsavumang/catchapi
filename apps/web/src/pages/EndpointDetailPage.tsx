@@ -1,6 +1,8 @@
 import { useParams, useNavigate } from 'react-router-dom';
 import { useEffect } from 'react';
 import { EndpointHeader } from '@/components/endpoints/EndpointHeader';
+import { PayloadList } from '@/components/payloads/PayloadList';
+import { Separator } from '@/components/ui/separator';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useGetEndpoint } from '@/hooks/useEndpoints';
 import { ROUTES } from '@/lib/constants';
@@ -18,7 +20,6 @@ export const EndpointDetailPage = () => {
 
   return (
     <div className="p-6 max-w-5xl mx-auto space-y-6">
-      {/* ─── Loading State ───────────────────────────────────────────── */}
       {isPending && (
         <div className="space-y-4">
           <div className="flex items-center gap-1.5">
@@ -31,16 +32,12 @@ export const EndpointDetailPage = () => {
         </div>
       )}
 
-      {/* ─── Endpoint Header ─────────────────────────────────────────── */}
-      {!isPending && endpoint && <EndpointHeader endpoint={endpoint} />}
-
-      {/* ─── Payload section placeholder ─────────────────────────────── */}
       {!isPending && endpoint && (
-        <div className="border-t border-border pt-6">
-          <p className="text-muted-foreground text-sm">
-            Payload list coming in Part 7.2
-          </p>
-        </div>
+        <>
+          <EndpointHeader endpoint={endpoint} />
+          <Separator />
+          <PayloadList endpointId={endpoint._id} />
+        </>
       )}
     </div>
   );
