@@ -12,15 +12,18 @@ import { RegisterPage } from '@/pages/RegisterPage';
 import { EndpointsPage } from '@/pages/EndpointsPage';
 import { EndpointDetailPage } from '@/pages/EndpointDetailPage';
 import { NotFoundPage } from '@/pages/NotFoundPage';
+import { ErrorFallback } from '@/pages/ErrorFallback';
 
 const router = createBrowserRouter([
   {
     path: '/',
     element: <Navigate to="/dashboard" replace />,
+    errorElement: <ErrorFallback />,
   },
 
   {
     element: <PublicRoute />,
+    errorElement: <ErrorFallback />,
     children: [
       { path: '/login', element: <LoginPage /> },
       { path: '/register', element: <RegisterPage /> },
@@ -29,6 +32,7 @@ const router = createBrowserRouter([
 
   {
     element: <ProtectedRoute />,
+    errorElement: <ErrorFallback />,
     children: [
       {
         element: <DashboardLayout />,
