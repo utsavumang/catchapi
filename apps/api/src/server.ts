@@ -1,4 +1,5 @@
 import express, { Request, Response } from 'express';
+import { createServer } from 'http';
 import cors from 'cors';
 import helmet from 'helmet';
 import pinoHttp from 'pino-http';
@@ -7,10 +8,9 @@ import cookieParser from 'cookie-parser';
 import { env } from './config/env';
 import { connectDB } from './config/db';
 import { setupSwagger } from './config/swagger';
-
+import { initSocket } from './config/socket';
 import { logger } from './utils/logger';
 import { setupGracefulShutdown } from './utils/shutdown';
-
 import { errorHandler } from './middleware/error.middleware';
 import {
   apiLimiter,
@@ -25,6 +25,10 @@ connectDB();
 
 const app = express();
 
+const httpServer = createServer(app);
+initSocket(httpServer);
+
+// Global M/W
 app.use(helmet());
 app.use(cookieParser());
 app.use(
@@ -37,6 +41,7 @@ app.use(
   })
 );
 
+// Webhook Ingestion M/W
 app.use(
   '/w',
   webhookLimiter,
@@ -50,6 +55,7 @@ app.use(
   catcherRoutes
 );
 
+// Management API M/W
 app.use(
   '/api',
   apiLimiter,
@@ -73,8 +79,8 @@ app.get('/health', (_req: Request, res: Response) => {
 app.use(errorHandler);
 
 const PORT = env.PORT;
-const server = app.listen(PORT, () => {
+httpServer.listen(PORT, () => {
   logger.info(`Server running on http://localhost:${PORT}`);
 });
 
-setupGracefulShutdown(server);
+setupGracefulShutdown(httpServer);
