@@ -2,6 +2,8 @@ import { Server, Socket } from 'socket.io';
 import { Server as HttpServer } from 'http';
 import { env } from './env';
 import { logger } from '../utils/logger';
+import { socketAuthMiddleware } from '../middleware/socketAuth.middleware';
+import '../types/socket.types';
 
 let io: Server;
 
@@ -15,12 +17,25 @@ export const initSocket = (httpServer: HttpServer): Server => {
     pingInterval: 25000,
   });
 
+  io.use(socketAuthMiddleware);
+
   io.on('connection', (socket: Socket) => {
-    logger.info({ socketId: socket.id }, 'Socket client connected');
+    logger.info(
+      {
+        socketId: socket.id,
+        userId: socket.data.user._id,
+        userName: socket.data.user.name,
+      },
+      'Socket client connected'
+    );
 
     socket.on('disconnect', (reason: string) => {
       logger.info(
-        { socketId: socket.id, reason },
+        {
+          socketId: socket.id,
+          userId: socket.data.user._id,
+          reason,
+        },
         'Socket client disconnected'
       );
     });
