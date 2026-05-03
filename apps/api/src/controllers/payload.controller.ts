@@ -5,6 +5,8 @@ import { AppError } from '../utils/AppError';
 import { catchAsync } from '../utils/catchAsync';
 import { AuthRequest } from '../middleware/auth.middleware';
 import { getPayloadsQuerySchema } from '@catchapi/shared';
+import { SOCKET_EVENTS } from '@catchapi/shared';
+import { getIO } from '../config/socket';
 
 // @desc    Catch incoming webhooks from external services
 // @route   ALL /w/:urlId
@@ -22,13 +24,31 @@ export const catchWebhook = catchAsync(async (req: Request, res: Response) => {
   const query = req.query as Record<string, unknown>;
   const body = req.body as Record<string, unknown> | string;
 
-  await Payload.create({
+  const savedPayload = await Payload.create({
     endpointId: endpoint._id,
     method,
     headers,
     query,
     body,
   });
+
+  try {
+    const io = getIO();
+    const room = `endpoint:${urlId}`;
+
+    io.to(room).emit(SOCKET_EVENTS.PAYLOAD_NEW, {
+      _id: savedPayload._id,
+      endpointId: savedPayload.endpointId,
+      method: savedPayload.method,
+      headers: savedPayload.headers,
+      query: savedPayload.query,
+      body: savedPayload.body,
+      createdAt: savedPayload.createdAt,
+    });
+  } catch (err) {
+    const logger = (await import('../utils/logger')).logger;
+    logger.error({ err }, 'Failed to broadcast payload via Socket.io');
+  }
 
   res.status(200).send('ok');
 });
