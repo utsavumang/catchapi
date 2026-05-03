@@ -22,7 +22,7 @@ export const EndpointDetailPage = () => {
     setTimeout(() => setNewPayloadId(null), 2000);
   }, []);
 
-  const { connectionStatus } = useEndpointSocket({
+  const { connectionStatus, reconnectAttempt, reconnect } = useEndpointSocket({
     urlId: urlId ?? '',
     endpointId: endpoint?._id ?? '',
     onNewPayload: handleNewPayload,
@@ -71,6 +71,8 @@ export const EndpointDetailPage = () => {
                 onSelectPayload={setSelectedPayload}
                 newPayloadId={newPayloadId}
                 connectionStatus={connectionStatus}
+                reconnectAttempt={reconnectAttempt}
+                onReconnect={reconnect}
               />
             </div>
 

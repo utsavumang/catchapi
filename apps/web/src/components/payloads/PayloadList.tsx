@@ -17,6 +17,8 @@ interface PayloadListProps {
   onSelectPayload: (payload: Payload) => void;
   newPayloadId: string | null;
   connectionStatus: ConnectionStatusType;
+  reconnectAttempt: number;
+  onReconnect: () => void;
 }
 
 export const PayloadList = ({
@@ -25,6 +27,8 @@ export const PayloadList = ({
   onSelectPayload,
   newPayloadId,
   connectionStatus,
+  reconnectAttempt,
+  onReconnect,
 }: PayloadListProps) => {
   const [selectedMethod, setSelectedMethod] = useState<HttpMethod | undefined>(
     undefined
@@ -54,7 +58,11 @@ export const PayloadList = ({
             <h2 className="text-lg font-semibold text-foreground">
               Incoming Payloads
             </h2>
-            <ConnectionStatus status={connectionStatus} />
+            <ConnectionStatus
+              status={connectionStatus}
+              reconnectAttempt={reconnectAttempt}
+              onReconnect={onReconnect}
+            />
           </div>
           <p className="text-sm text-muted-foreground">
             Requests received by this endpoint

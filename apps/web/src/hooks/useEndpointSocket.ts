@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef, useState, useCallback } from 'react';
 import { io, Socket } from 'socket.io-client';
 import { useAuthStore } from '@/store/auth.store';
 import { queryClient } from '@/lib/queryClient';
@@ -17,7 +17,18 @@ interface UseEndpointSocketOptions {
 
 interface UseEndpointSocketReturn {
   connectionStatus: ConnectionStatus;
+  reconnectAttempt: number;
+  reconnect: () => void;
 }
+
+const createSocket = (token: string): Socket => {
+  return io(import.meta.env.VITE_API_URL.replace('/api/v1', ''), {
+    auth: { token },
+    transports: ['websocket'],
+
+    reconnection: false,
+  });
+};
 
 export const useEndpointSocket = ({
   urlId,
@@ -27,6 +38,53 @@ export const useEndpointSocket = ({
   const socketRef = useRef<Socket | null>(null);
   const [connectionStatus, setConnectionStatus] =
     useState<ConnectionStatus>('connecting');
+  const [reconnectAttempt, setReconnectAttempt] = useState(0);
+
+  const bindSocketEvents = useCallback(
+    (socket: Socket) => {
+      socket.on('connect', () => {
+        setConnectionStatus('connected');
+        setReconnectAttempt(0);
+        socket.emit(SOCKET_EVENTS.JOIN_ENDPOINT, urlId);
+      });
+
+      socket.on('disconnect', () => {
+        setConnectionStatus('disconnected');
+      });
+
+      socket.on('connect_error', () => {
+        setConnectionStatus('disconnected');
+      });
+
+      socket.on(SOCKET_EVENTS.JOINED, ({ room }: { room: string }) => {
+        console.info(`Socket joined room: ${room}`);
+      });
+
+      socket.on(SOCKET_EVENTS.PAYLOAD_NEW, (payload: Payload) => {
+        queryClient.setQueryData<InfiniteData<PaginatedPayloads>>(
+          queryKeys.payloads.byEndpoint(endpointId),
+          (oldData) => {
+            if (!oldData) return oldData;
+
+            const firstPage = oldData.pages[0];
+            const updatedFirstPage: PaginatedPayloads = {
+              ...firstPage,
+              data: [payload, ...firstPage.data],
+              results: firstPage.results + 1,
+            };
+
+            return {
+              ...oldData,
+              pages: [updatedFirstPage, ...oldData.pages.slice(1)],
+            };
+          }
+        );
+
+        onNewPayload?.(payload);
+      });
+    },
+    [urlId, endpointId, onNewPayload]
+  );
 
   useEffect(() => {
     const token = useAuthStore.getState().token;
@@ -38,52 +96,9 @@ export const useEndpointSocket = ({
 
     setConnectionStatus('connecting');
 
-    const socket = io(import.meta.env.VITE_API_URL.replace('/api/v1', ''), {
-      auth: { token },
-      transports: ['websocket'],
-    });
-
+    const socket = createSocket(token);
     socketRef.current = socket;
-
-    socket.on('connect', () => {
-      setConnectionStatus('connected');
-      socket.emit(SOCKET_EVENTS.JOIN_ENDPOINT, urlId);
-    });
-
-    socket.on('disconnect', () => {
-      setConnectionStatus('disconnected');
-    });
-
-    socket.on('connect_error', () => {
-      setConnectionStatus('disconnected');
-    });
-
-    socket.on(SOCKET_EVENTS.JOINED, ({ room }: { room: string }) => {
-      console.info(`Socket joined room: ${room}`);
-    });
-
-    socket.on(SOCKET_EVENTS.PAYLOAD_NEW, (payload: Payload) => {
-      queryClient.setQueryData<InfiniteData<PaginatedPayloads>>(
-        queryKeys.payloads.byEndpoint(endpointId),
-        (oldData) => {
-          if (!oldData) return oldData;
-
-          const firstPage = oldData.pages[0];
-          const updatedFirstPage: PaginatedPayloads = {
-            ...firstPage,
-            data: [payload, ...firstPage.data],
-            results: firstPage.results + 1,
-          };
-
-          return {
-            ...oldData,
-            pages: [updatedFirstPage, ...oldData.pages.slice(1)],
-          };
-        }
-      );
-
-      onNewPayload?.(payload);
-    });
+    bindSocketEvents(socket);
 
     return () => {
       socket.emit(SOCKET_EVENTS.LEAVE_ENDPOINT, urlId);
@@ -91,7 +106,24 @@ export const useEndpointSocket = ({
       socketRef.current = null;
       setConnectionStatus('disconnected');
     };
-  }, [urlId, endpointId, onNewPayload]);
+  }, [urlId, endpointId, bindSocketEvents]);
 
-  return { connectionStatus };
+  const reconnect = useCallback(() => {
+    const token = useAuthStore.getState().token;
+    if (!token) return;
+
+    if (socketRef.current) {
+      socketRef.current.emit(SOCKET_EVENTS.LEAVE_ENDPOINT, urlId);
+      socketRef.current.disconnect();
+    }
+
+    setConnectionStatus('connecting');
+    setReconnectAttempt((prev) => prev + 1);
+
+    const socket = createSocket(token);
+    socketRef.current = socket;
+    bindSocketEvents(socket);
+  }, [urlId, bindSocketEvents]);
+
+  return { connectionStatus, reconnectAttempt, reconnect };
 };
