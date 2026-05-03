@@ -7,6 +7,7 @@ interface PayloadCardProps {
   payload: Payload;
   isSelected: boolean;
   onSelect: (payload: Payload) => void;
+  isNew?: boolean;
 }
 
 const getBodyPreview = (body: Payload['body']): string => {
@@ -23,15 +24,18 @@ export const PayloadCard = ({
   payload,
   isSelected,
   onSelect,
+  isNew = false,
 }: PayloadCardProps) => {
   return (
     <div
       onClick={() => onSelect(payload)}
       className={cn(
-        'flex items-start gap-3 px-4 py-3 rounded-lg border cursor-pointer transition-all',
+        'flex items-start gap-3 px-4 py-3 rounded-lg border cursor-pointer transition-all duration-300',
         isSelected
           ? 'border-primary/50 bg-primary/5'
-          : 'border-border bg-card hover:border-border/80 hover:bg-card/80'
+          : isNew
+            ? 'border-emerald-500/50 bg-emerald-500/5'
+            : 'border-border bg-card hover:border-border/80 hover:bg-card/80'
       )}
     >
       <MethodBadge method={payload.method} />

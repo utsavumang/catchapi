@@ -13,12 +13,14 @@ interface PayloadListProps {
   endpointId: string;
   selectedPayload: Payload | null;
   onSelectPayload: (payload: Payload) => void;
+  newPayloadId: string | null;
 }
 
 export const PayloadList = ({
   endpointId,
   selectedPayload,
   onSelectPayload,
+  newPayloadId,
 }: PayloadListProps) => {
   const [selectedMethod, setSelectedMethod] = useState<HttpMethod | undefined>(
     undefined
@@ -94,6 +96,7 @@ export const PayloadList = ({
               payload={payload}
               isSelected={selectedPayload?._id === payload._id}
               onSelect={onSelectPayload}
+              isNew={newPayloadId === payload._id}
             />
           ))}
         </div>

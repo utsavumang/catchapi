@@ -1,11 +1,12 @@
 import { useParams, useNavigate } from 'react-router-dom';
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useCallback } from 'react';
 import { EndpointHeader } from '@/components/endpoints/EndpointHeader';
 import { PayloadList } from '@/components/payloads/PayloadList';
 import { PayloadInspector } from '@/components/payloads/PayloadInspector';
 import { Separator } from '@/components/ui/separator';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useGetEndpoint } from '@/hooks/useEndpoints';
+import { useEndpointSocket } from '@/hooks/useEndpointSocket';
 import { Payload } from '@/types';
 import { ROUTES } from '@/lib/constants';
 
@@ -14,6 +15,18 @@ export const EndpointDetailPage = () => {
   const navigate = useNavigate();
   const { data: endpoint, isPending, isError } = useGetEndpoint(urlId ?? '');
   const [selectedPayload, setSelectedPayload] = useState<Payload | null>(null);
+  const [newPayloadId, setNewPayloadId] = useState<string | null>(null);
+
+  const handleNewPayload = useCallback((payload: Payload) => {
+    setNewPayloadId(payload._id);
+    setTimeout(() => setNewPayloadId(null), 2000);
+  }, []);
+
+  useEndpointSocket({
+    urlId: urlId ?? '',
+    endpointId: endpoint?._id ?? '',
+    onNewPayload: handleNewPayload,
+  });
 
   useEffect(() => {
     if (isError) {
@@ -27,7 +40,6 @@ export const EndpointDetailPage = () => {
 
   return (
     <div className="p-6 max-w-7xl mx-auto space-y-6">
-      {/* ─── Loading State ───────────────────────────────────────────── */}
       {isPending && (
         <div className="space-y-4">
           <div className="flex items-center gap-1.5">
@@ -45,7 +57,6 @@ export const EndpointDetailPage = () => {
           <EndpointHeader endpoint={endpoint} />
           <Separator />
 
-          {/* ─── Split Panel Layout ──────────────────────────────────── */}
           <div
             className={
               selectedPayload
@@ -53,16 +64,15 @@ export const EndpointDetailPage = () => {
                 : 'block'
             }
           >
-            {/* Payload list */}
             <div>
               <PayloadList
                 endpointId={endpoint._id}
                 selectedPayload={selectedPayload}
                 onSelectPayload={setSelectedPayload}
+                newPayloadId={newPayloadId}
               />
             </div>
 
-            {/* Inspector */}
             {selectedPayload && (
               <div className="lg:sticky lg:top-6">
                 <PayloadInspector
