@@ -8,12 +8,15 @@ import { UI } from '@/lib/constants';
 import { MethodFilter, HttpMethod } from '@/components/payloads/MethodFilter';
 import { PayloadCard } from '@/components/payloads/PayloadCard';
 import { Payload } from '@/types';
+import { ConnectionStatus } from '@/components/common/ConnectionStatus';
+import { ConnectionStatus as ConnectionStatusType } from '@/hooks/useEndpointSocket';
 
 interface PayloadListProps {
   endpointId: string;
   selectedPayload: Payload | null;
   onSelectPayload: (payload: Payload) => void;
   newPayloadId: string | null;
+  connectionStatus: ConnectionStatusType;
 }
 
 export const PayloadList = ({
@@ -21,6 +24,7 @@ export const PayloadList = ({
   selectedPayload,
   onSelectPayload,
   newPayloadId,
+  connectionStatus,
 }: PayloadListProps) => {
   const [selectedMethod, setSelectedMethod] = useState<HttpMethod | undefined>(
     undefined
@@ -46,9 +50,12 @@ export const PayloadList = ({
     <div className="space-y-4">
       <div className="flex items-center justify-between gap-4 flex-wrap">
         <div>
-          <h2 className="text-lg font-semibold text-foreground">
-            Incoming Payloads
-          </h2>
+          <div className="flex items-center gap-3">
+            <h2 className="text-lg font-semibold text-foreground">
+              Incoming Payloads
+            </h2>
+            <ConnectionStatus status={connectionStatus} />
+          </div>
           <p className="text-sm text-muted-foreground">
             Requests received by this endpoint
           </p>
