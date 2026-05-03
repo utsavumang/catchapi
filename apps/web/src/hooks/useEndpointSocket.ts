@@ -40,12 +40,21 @@ export const useEndpointSocket = ({
     useState<ConnectionStatus>('connecting');
   const [reconnectAttempt, setReconnectAttempt] = useState(0);
 
+  const isFirstConnect = useRef(true);
+
   const bindSocketEvents = useCallback(
     (socket: Socket) => {
       socket.on('connect', () => {
         setConnectionStatus('connected');
         setReconnectAttempt(0);
         socket.emit(SOCKET_EVENTS.JOIN_ENDPOINT, urlId);
+
+        if (!isFirstConnect.current) {
+          queryClient.invalidateQueries({
+            queryKey: queryKeys.payloads.byEndpoint(endpointId),
+          });
+        }
+        isFirstConnect.current = false;
       });
 
       socket.on('disconnect', () => {
