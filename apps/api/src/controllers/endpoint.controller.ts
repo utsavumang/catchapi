@@ -1,8 +1,22 @@
 import { Response } from 'express';
-import { Endpoint } from '../models/endpoint.model';
 import { AppError } from '../utils/AppError';
 import { catchAsync } from '../utils/catchAsync';
 import { AuthRequest } from '../middleware/auth.middleware';
+import { Endpoint, IEndpoint } from '../models/endpoint.model';
+
+// Helper - formats an endpoint document into the API response shape
+// Used by createEndpoint, getEndpoints, and getEndpoint
+const formatEndpoint = (endpoint: IEndpoint, fullUrl: string) => ({
+  _id: endpoint._id,
+  urlId: endpoint.urlId,
+  fullUrl,
+  name: endpoint.name,
+  description: endpoint.description,
+  userId: endpoint.userId,
+  payloadCount: endpoint.payloadCount,
+  lastReceivedAt: endpoint.lastReceivedAt,
+  createdAt: endpoint.createdAt,
+});
 
 // @desc    Create a new webhook endpoint
 // @route   POST /api/v1/endpoints
@@ -21,15 +35,7 @@ export const createEndpoint = catchAsync(
 
     res.status(201).json({
       status: 'success',
-      data: {
-        _id: endpoint._id,
-        urlId: endpoint.urlId,
-        fullUrl,
-        name: endpoint.name,
-        description: endpoint.description,
-        userId: endpoint.userId,
-        createdAt: endpoint.createdAt,
-      },
+      data: formatEndpoint(endpoint, fullUrl),
     });
   }
 );
@@ -43,16 +49,9 @@ export const getEndpoints = catchAsync(
       createdAt: -1,
     });
 
-    const formattedEndpoints = endpoints.map((ep) => ({
-      _id: ep._id,
-      urlId: ep.urlId,
-      fullUrl: `${req.protocol}://${req.get('host')}/w/${ep.urlId}`,
-      name: ep.name,
-      description: ep.description,
-      userId: ep.userId,
-      createdAt: ep.createdAt,
-    }));
-
+    const formattedEndpoints = endpoints.map((ep) =>
+      formatEndpoint(ep, `${req.protocol}://${req.get('host')}/w/${ep.urlId}`)
+    );
     res.status(200).json({
       status: 'success',
       results: formattedEndpoints.length,
@@ -76,18 +75,9 @@ export const getEndpoint = catchAsync(
     }
 
     const fullUrl = `${req.protocol}://${req.get('host')}/w/${endpoint.urlId}`;
-
     res.status(200).json({
       status: 'success',
-      data: {
-        _id: endpoint._id,
-        urlId: endpoint.urlId,
-        fullUrl,
-        name: endpoint.name,
-        description: endpoint.description,
-        userId: endpoint.userId,
-        createdAt: endpoint.createdAt,
-      },
+      data: formatEndpoint(endpoint, fullUrl),
     });
   }
 );

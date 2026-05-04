@@ -32,10 +32,14 @@ export const catchWebhook = catchAsync(async (req: Request, res: Response) => {
     body,
   });
 
+  await Endpoint.findByIdAndUpdate(endpoint._id, {
+    $inc: { payloadCount: 1 },
+    $set: { lastReceivedAt: new Date() },
+  });
+
   try {
     const io = getIO();
     const room = `endpoint:${urlId}`;
-
     io.to(room).emit(SOCKET_EVENTS.PAYLOAD_NEW, {
       _id: savedPayload._id,
       endpointId: savedPayload.endpointId,

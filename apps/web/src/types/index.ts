@@ -5,6 +5,8 @@ export interface EndpointWithUrl {
   name: string;
   description?: string;
   userId: string;
+  payloadCount: number;
+  lastReceivedAt: string | null;
   createdAt: string;
 }
 

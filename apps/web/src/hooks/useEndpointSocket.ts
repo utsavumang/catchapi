@@ -4,8 +4,13 @@ import { useAuthStore } from '@/store/auth.store';
 import { queryClient } from '@/lib/queryClient';
 import { queryKeys } from '@/lib/constants';
 import { SOCKET_EVENTS } from '@catchapi/shared';
-import { Payload, PaginatedPayloads } from '@/types';
 import { InfiniteData } from '@tanstack/react-query';
+import {
+  Payload,
+  PaginatedPayloads,
+  EndpointWithUrl,
+  ListResponse,
+} from '@/types';
 
 export type ConnectionStatus = 'connecting' | 'connected' | 'disconnected';
 
@@ -74,17 +79,34 @@ export const useEndpointSocket = ({
           queryKeys.payloads.byEndpoint(endpointId),
           (oldData) => {
             if (!oldData) return oldData;
-
             const firstPage = oldData.pages[0];
             const updatedFirstPage: PaginatedPayloads = {
               ...firstPage,
               data: [payload, ...firstPage.data],
               results: firstPage.results + 1,
             };
-
             return {
               ...oldData,
               pages: [updatedFirstPage, ...oldData.pages.slice(1)],
+            };
+          }
+        );
+
+        queryClient.setQueryData<ListResponse<EndpointWithUrl>>(
+          queryKeys.endpoints.list(),
+          (oldData) => {
+            if (!oldData) return oldData;
+            return {
+              ...oldData,
+              data: oldData.data.map((ep) =>
+                ep._id === endpointId
+                  ? {
+                      ...ep,
+                      payloadCount: ep.payloadCount + 1,
+                      lastReceivedAt: new Date().toISOString(),
+                    }
+                  : ep
+              ),
             };
           }
         );

@@ -7,6 +7,8 @@ import { ConfirmDialog } from '@/components/common/ConfirmDialog';
 import { useDeleteEndpoint } from '@/hooks/useEndpoints';
 import { EndpointWithUrl } from '@/types';
 import { ROUTES } from '@/lib/constants';
+import { Badge } from '@/components/ui/badge';
+import { formatDistanceToNow } from 'date-fns';
 
 interface EndpointHeaderProps {
   endpoint: EndpointWithUrl;
@@ -62,15 +64,26 @@ export const EndpointHeader = ({ endpoint }: EndpointHeaderProps) => {
 
         {/* ─── Title Row ───────────────────────────────────────────── */}
         <div className="flex items-start justify-between gap-4">
-          <div className="flex-1 min-w-0">
-            <h1 className="text-2xl font-bold text-foreground">
-              {endpoint.name}
-            </h1>
+          <div className="flex-1 min-w-0 space-y-1">
+            <div className="flex items-center gap-3 flex-wrap">
+              <h1 className="text-2xl font-bold text-foreground">
+                {endpoint.name}
+              </h1>
+              <Badge variant="secondary" className="font-mono text-xs">
+                {endpoint.payloadCount} payload
+                {endpoint.payloadCount !== 1 ? 's' : ''}
+              </Badge>
+            </div>
             {endpoint.description && (
-              <p className="text-sm text-muted-foreground mt-1">
+              <p className="text-sm text-muted-foreground">
                 {endpoint.description}
               </p>
             )}
+            <p className="text-xs text-muted-foreground">
+              {endpoint.lastReceivedAt
+                ? `Last received ${formatDistanceToNow(new Date(endpoint.lastReceivedAt), { addSuffix: true })}`
+                : 'No activity yet'}
+            </p>
           </div>
           <Button
             variant="ghost"

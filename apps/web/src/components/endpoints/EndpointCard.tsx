@@ -1,7 +1,5 @@
 import { useState } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
-import { Copy, Trash2, Check } from 'lucide-react';
-import { formatDistanceToNow } from 'date-fns';
 import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
 import { ConfirmDialog } from '@/components/common/ConfirmDialog';
@@ -9,6 +7,9 @@ import { useDeleteEndpoint } from '@/hooks/useEndpoints';
 import { EndpointWithUrl } from '@/types';
 import { ROUTES } from '@/lib/constants';
 import { cn } from '@/lib/utils';
+import { formatDistanceToNow } from 'date-fns';
+import { Copy, Trash2, Check } from 'lucide-react';
+import { Badge } from '@/components/ui/badge';
 
 interface EndpointCardProps {
   endpoint: EndpointWithUrl;
@@ -62,12 +63,17 @@ export const EndpointCard = ({ endpoint }: EndpointCardProps) => {
       >
         {/* ─── Header ────────────────────────────────────────────────── */}
         <div className="flex items-start justify-between gap-4">
-          <div className="flex-1 min-w-0">
-            <h3 className="font-semibold text-foreground truncate">
-              {endpoint.name}
-            </h3>
+          <div className="flex-1 min-w-0 space-y-1">
+            <div className="flex items-center gap-2">
+              <h3 className="font-semibold text-foreground truncate">
+                {endpoint.name}
+              </h3>
+              <Badge variant="secondary" className="shrink-0 font-mono text-xs">
+                {endpoint.payloadCount}
+              </Badge>
+            </div>
             {endpoint.description && (
-              <p className="text-sm text-muted-foreground mt-0.5 truncate">
+              <p className="text-sm text-muted-foreground truncate">
                 {endpoint.description}
               </p>
             )}
@@ -111,12 +117,19 @@ export const EndpointCard = ({ endpoint }: EndpointCardProps) => {
         </div>
 
         {/* ─── Footer ────────────────────────────────────────────────── */}
-        <p className="text-xs text-muted-foreground">
-          Created{' '}
-          {formatDistanceToNow(new Date(endpoint.createdAt), {
-            addSuffix: true,
-          })}
-        </p>
+        <div className="flex items-center justify-between text-xs text-muted-foreground">
+          <span>
+            Created{' '}
+            {formatDistanceToNow(new Date(endpoint.createdAt), {
+              addSuffix: true,
+            })}
+          </span>
+          <span>
+            {endpoint.lastReceivedAt
+              ? `Last received ${formatDistanceToNow(new Date(endpoint.lastReceivedAt), { addSuffix: true })}`
+              : 'No activity yet'}
+          </span>
+        </div>
       </div>
 
       <ConfirmDialog

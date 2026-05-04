@@ -9,6 +9,8 @@ export interface IEndpoint extends Document {
   urlId: string;
   name: string;
   description?: string;
+  payloadCount: number;
+  lastReceivedAt: Date | null;
   createdAt: Date;
   updatedAt: Date;
 }
@@ -33,6 +35,14 @@ const endpointSchema = new mongoose.Schema(
     description: {
       type: String,
       required: false,
+    },
+    payloadCount: {
+      type: Number,
+      default: 0,
+    },
+    lastReceivedAt: {
+      type: Date,
+      default: null,
     },
   },
   {
