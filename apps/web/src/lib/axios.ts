@@ -25,8 +25,13 @@ api.interceptors.response.use(
   async (error) => {
     const originalRequest = error.config;
 
+    const isAuthRoute = originalRequest?.url?.includes('/auth/');
     // Only attempt refresh on 401 responses.
-    if (error.response?.status !== 401 || originalRequest._retry) {
+    if (
+      error.response?.status !== 401 ||
+      originalRequest._retry ||
+      isAuthRoute
+    ) {
       return Promise.reject(error);
     }
 
