@@ -15,7 +15,7 @@ export const useGetPayloads = ({
   limit = 50,
 }: UseGetPayloadsParams) => {
   return useInfiniteQuery({
-    queryKey: queryKeys.payloads.byEndpoint(endpointId),
+    queryKey: queryKeys.payloads.byEndpoint(endpointId, method),
     queryFn: ({ pageParam }) =>
       getPayloads(endpointId, {
         cursor: pageParam as string | undefined,

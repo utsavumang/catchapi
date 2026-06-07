@@ -80,17 +80,28 @@ export const useEndpointSocket = ({
           (oldData) => {
             if (!oldData) return oldData;
             const firstPage = oldData.pages[0];
-            const updatedFirstPage: PaginatedPayloads = {
-              ...firstPage,
-              data: [payload, ...firstPage.data],
-              results: firstPage.results + 1,
-            };
             return {
               ...oldData,
-              pages: [updatedFirstPage, ...oldData.pages.slice(1)],
+              pages: [
+                {
+                  ...firstPage,
+                  data: [payload, ...firstPage.data],
+                  results: firstPage.results + 1,
+                },
+                ...oldData.pages.slice(1),
+              ],
             };
           }
         );
+
+        queryClient.invalidateQueries({
+          predicate: (query) => {
+            const key = query.queryKey as unknown[];
+            return (
+              key[0] === 'payloads' && key[1] === endpointId && key.length > 2 // has a method filter
+            );
+          },
+        });
 
         queryClient.setQueryData<ListResponse<EndpointWithUrl>>(
           queryKeys.endpoints.list(),

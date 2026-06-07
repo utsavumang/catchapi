@@ -18,8 +18,12 @@ export const queryKeys = {
   },
   payloads: {
     all: ['payloads'] as const,
-    byEndpoint: (endpointId: string) =>
-      [...queryKeys.payloads.all, endpointId] as const,
+    byEndpoint: (endpointId: string, method?: string) =>
+      [
+        ...queryKeys.payloads.all,
+        endpointId,
+        ...(method ? [method] : []),
+      ] as const,
   },
   auth: {
     me: ['auth', 'me'] as const,
