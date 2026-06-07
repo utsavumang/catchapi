@@ -25,6 +25,8 @@ connectDB();
 
 const app = express();
 
+app.set('trust proxy', 1); // to return req.protocol as https
+
 const httpServer = createServer(app);
 initSocket(httpServer);
 
