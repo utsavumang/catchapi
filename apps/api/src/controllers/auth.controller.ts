@@ -22,7 +22,6 @@ const REFRESH_TOKEN_COOKIE_OPTIONS = {
   path: '/',
 };
 
-// @desc    Register a new user
 // @route   POST /api/v1/auth/register
 export const registerUser = catchAsync(async (req: Request, res: Response) => {
   const { name, email, password } = req.body;
@@ -48,7 +47,6 @@ export const registerUser = catchAsync(async (req: Request, res: Response) => {
   });
 });
 
-// @desc    Authenticate user & get token
 // @route   POST /api/v1/auth/login
 export const loginUser = catchAsync(async (req: Request, res: Response) => {
   const { email, password } = req.body;
@@ -58,7 +56,7 @@ export const loginUser = catchAsync(async (req: Request, res: Response) => {
     throw new AppError('Invalid email or password', 401);
   }
 
-  // @ts-expect-error - matchPassword is a custom schema method not recognized by default Mongoose types
+  // @ts-expect-error - matchPassword is a custom schema method
   const isMatch = await user.matchPassword(password);
   if (!isMatch) {
     throw new AppError('Invalid email or password', 401);
@@ -79,7 +77,6 @@ export const loginUser = catchAsync(async (req: Request, res: Response) => {
   });
 });
 
-// @desc    Refresh access token using refresh token cookie
 // @route   POST /api/v1/auth/refresh
 export const refreshAccessToken = catchAsync(
   async (req: Request, res: Response) => {
@@ -126,7 +123,6 @@ export const refreshAccessToken = catchAsync(
   }
 );
 
-// @desc    Logout — invalidate refresh token
 // @route   POST /api/v1/auth/logout
 export const logoutUser = catchAsync(async (req: Request, res: Response) => {
   const incomingToken = req.cookies.refreshToken;
@@ -139,7 +135,7 @@ export const logoutUser = catchAsync(async (req: Request, res: Response) => {
       const tokenHash = hashToken(decoded.token);
       await RefreshToken.deleteOne({ tokenHash });
     } catch {
-      // Token already invalid — still proceed with logout
+      // Token already invalid, still proceed with logout
     }
   }
 
@@ -151,9 +147,7 @@ export const logoutUser = catchAsync(async (req: Request, res: Response) => {
   });
 });
 
-// @desc    Get current logged in user
 // @route   GET /api/v1/auth/me
-// @access  Private
 export const getMe = catchAsync(async (req: AuthRequest, res: Response) => {
   res.status(200).json({
     status: 'success',
@@ -162,3 +156,60 @@ export const getMe = catchAsync(async (req: AuthRequest, res: Response) => {
     },
   });
 });
+
+// @route   PATCH /api/v1/auth/profile
+export const updateProfile = catchAsync(
+  async (req: AuthRequest, res: Response) => {
+    const { name } = req.body;
+
+    const user = await User.findByIdAndUpdate(
+      req.user!._id,
+      { name },
+      { new: true, runValidators: true }
+    ).select('-password');
+
+    if (!user) {
+      throw new AppError('User not found', 404);
+    }
+
+    res.status(200).json({
+      status: 'success',
+      data: {
+        user: {
+          _id: user._id,
+          name: user.name,
+          email: user.email,
+        },
+      },
+    });
+  }
+);
+
+// @route   PATCH /api/v1/auth/password
+export const changePassword = catchAsync(
+  async (req: AuthRequest, res: Response) => {
+    const { currentPassword, newPassword } = req.body;
+
+    const user = await User.findById(req.user!._id).select('+password');
+    if (!user) {
+      throw new AppError('User not found', 404);
+    }
+
+    // @ts-expect-error - matchPassword is a custom schema method
+    const isMatch = await user.matchPassword(currentPassword);
+    if (!isMatch) {
+      throw new AppError('Current password is incorrect', 401);
+    }
+
+    user.password = newPassword;
+    await user.save();
+
+    await RefreshToken.deleteMany({ userId: user._id });
+    res.clearCookie('refreshToken', { path: '/' });
+
+    res.status(200).json({
+      status: 'success',
+      message: 'Password updated. Please log in again.',
+    });
+  }
+);

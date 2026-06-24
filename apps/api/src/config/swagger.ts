@@ -9,6 +9,8 @@ import {
   createEndpointSchema,
   loginSchema,
   registerSchema,
+  updateProfileSchema,
+  changePasswordSchema,
 } from '@catchapi/shared';
 
 import { Application } from 'express';
@@ -24,7 +26,7 @@ const bearerAuth = registry.registerComponent('securitySchemes', 'bearerAuth', {
   bearerFormat: 'JWT',
 });
 
-// ─── Auth Routes ──────────────────────────────────────────────────────────────
+// Auth Routes
 
 const authResponseSchema = z
   .object({
@@ -176,7 +178,49 @@ registry.registerPath({
   },
 });
 
-// ─── Endpoint Routes ──────────────────────────────────────────────────────────
+registry.registerPath({
+  method: 'patch',
+  path: '/api/v1/auth/profile',
+  summary: 'Update display name',
+  security: [{ [bearerAuth.name]: [] }],
+  request: {
+    body: {
+      content: {
+        'application/json': {
+          schema: registry.register('UpdateProfileBody', updateProfileSchema),
+        },
+      },
+    },
+  },
+  responses: {
+    200: { description: 'Profile updated successfully' },
+    401: { description: 'Not authorized' },
+  },
+});
+
+registry.registerPath({
+  method: 'patch',
+  path: '/api/v1/auth/password',
+  summary: 'Change account password',
+  description:
+    'Verifies the current password before updating. Invalidates all active sessions on success — the user must log in again.',
+  security: [{ [bearerAuth.name]: [] }],
+  request: {
+    body: {
+      content: {
+        'application/json': {
+          schema: registry.register('ChangePasswordBody', changePasswordSchema),
+        },
+      },
+    },
+  },
+  responses: {
+    200: { description: 'Password changed. All active sessions invalidated.' },
+    401: { description: 'Current password is incorrect' },
+  },
+});
+
+// Endpoint Routes
 
 registry.registerPath({
   method: 'post',
@@ -273,7 +317,7 @@ registry.registerPath({
   },
 });
 
-// ─── Document Generator ───────────────────────────────────────────────────────
+// Document Generator
 
 const generateOpenAPIDocument = () => {
   const generator = new OpenApiGeneratorV3(registry.definitions);
@@ -288,7 +332,7 @@ const generateOpenAPIDocument = () => {
   });
 };
 
-// ─── Swagger Middleware Setup ─────────────────────────────────────────────────
+// Swagger Middleware Setup
 
 export const setupSwagger = (app: Application): void => {
   const openApiDocument = generateOpenAPIDocument();
