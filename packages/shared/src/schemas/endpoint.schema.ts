@@ -48,7 +48,12 @@ export interface PaginatedPayloadResponse {
   hasMore: boolean;
 }
 
+export const replayPayloadSchema = z.object({
+  targetUrl: z.string().url('Target must be a valid URL'),
+});
+
 export type GetPayloadsQuery = z.infer<typeof getPayloadsQuerySchema>;
 export type CreateEndpointInput = z.infer<typeof createEndpointSchema>;
 export type Endpoint = z.infer<typeof endpointSchema>;
 export type WebhookPayload = z.infer<typeof payloadSchema>;
+export type ReplayPayloadInput = z.infer<typeof replayPayloadSchema>;

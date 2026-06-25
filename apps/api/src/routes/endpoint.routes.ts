@@ -5,11 +5,11 @@ import {
   getEndpoint,
   deleteEndpoint,
 } from '../controllers/endpoint.controller';
-import { getPayloads } from '../controllers/payload.controller';
+import { getPayloads, replayPayload } from '../controllers/payload.controller';
 
 import { protect } from '../middleware/auth.middleware';
 import { validateRequest } from '../middleware/validate.middleware';
-import { createEndpointSchema } from '@catchapi/shared'; // Imported directly from the monorepo
+import { createEndpointSchema, replayPayloadSchema } from '@catchapi/shared'; // Imported directly from the monorepo
 
 const router = express.Router();
 
@@ -27,5 +27,12 @@ router.get('/:id', protect, getEndpoint);
 router.delete('/:id', protect, deleteEndpoint);
 
 router.get('/:endpointId/payloads', protect, getPayloads);
+
+router.post(
+  '/:endpointId/payloads/:payloadId/replay',
+  protect,
+  validateRequest(replayPayloadSchema),
+  replayPayload
+);
 
 export default router;

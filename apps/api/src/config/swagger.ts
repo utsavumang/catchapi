@@ -11,6 +11,7 @@ import {
   registerSchema,
   updateProfileSchema,
   changePasswordSchema,
+  replayPayloadSchema,
 } from '@catchapi/shared';
 
 import { Application } from 'express';
@@ -314,6 +315,35 @@ registry.registerPath({
   },
   responses: {
     200: { description: 'Returns paginated payloads with a nextCursor' },
+  },
+});
+
+registry.registerPath({
+  method: 'post',
+  path: '/api/v1/endpoints/{endpointId}/payloads/{payloadId}/replay',
+  summary: 'Replay a captured payload to a target URL',
+  description:
+    'Forwards the original payload to the specified target URL with the original method, filtered headers, and body. Infrastructure and proxy headers are stripped. Returns the target response status.',
+  security: [{ [bearerAuth.name]: [] }],
+  request: {
+    params: z.object({
+      endpointId: z.string(),
+      payloadId: z.string(),
+    }),
+    body: {
+      content: {
+        'application/json': {
+          schema: registry.register('ReplayPayloadBody', replayPayloadSchema),
+        },
+      },
+    },
+  },
+  responses: {
+    200: {
+      description: 'Replay completed. Returns the target response status code.',
+    },
+    404: { description: 'Endpoint or payload not found' },
+    502: { description: 'Target URL was unreachable' },
   },
 });
 

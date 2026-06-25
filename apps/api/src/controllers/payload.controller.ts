@@ -8,9 +8,7 @@ import { getPayloadsQuerySchema } from '@catchapi/shared';
 import { SOCKET_EVENTS } from '@catchapi/shared';
 import { getIO } from '../config/socket';
 
-// @desc    Catch incoming webhooks from external services
 // @route   ALL /w/:urlId
-// @access  Public
 export const catchWebhook = catchAsync(async (req: Request, res: Response) => {
   const { urlId } = req.params;
 
@@ -57,9 +55,7 @@ export const catchWebhook = catchAsync(async (req: Request, res: Response) => {
   res.status(200).send('ok');
 });
 
-// @desc    Get paginated payloads for a specific endpoint
 // @route   GET /api/v1/endpoints/:endpointId/payloads
-// @access  Private
 export const getPayloads = catchAsync(
   async (req: AuthRequest, res: Response) => {
     const { endpointId } = req.params;
@@ -117,5 +113,92 @@ export const getPayloads = catchAsync(
       nextCursor: hasMore ? nextCursor : null,
       hasMore,
     });
+  }
+);
+
+// @route   POST /api/v1/endpoints/:endpointId/payloads/:payloadId/replay
+export const replayPayload = catchAsync(
+  async (req: AuthRequest, res: Response) => {
+    const { endpointId, payloadId } = req.params;
+    const { targetUrl } = req.body as { targetUrl: string };
+
+    const endpoint = await Endpoint.findOne({
+      _id: endpointId,
+      userId: req.user!._id,
+    });
+    if (!endpoint) {
+      throw new AppError('Endpoint not found or unauthorized', 404);
+    }
+
+    const payload = await Payload.findOne({
+      _id: payloadId,
+      endpointId,
+    });
+    if (!payload) {
+      throw new AppError('Payload not found', 404);
+    }
+
+    const SKIP_HEADERS = new Set([
+      'host',
+      'content-length',
+      'transfer-encoding',
+      'connection',
+      'x-forwarded-for',
+      'x-forwarded-host',
+      'x-forwarded-proto',
+      'x-real-ip',
+      'x-request-start',
+      'x-railway-edge',
+      'x-railway-request-id',
+    ]);
+
+    const forwardedHeaders: Record<string, string> = {};
+    for (const [key, value] of Object.entries(
+      payload.headers as Record<string, string>
+    )) {
+      if (!SKIP_HEADERS.has(key.toLowerCase())) {
+        forwardedHeaders[key] = value;
+      }
+    }
+
+    const NO_BODY_METHODS = new Set(['GET', 'HEAD']);
+    let body: string | undefined;
+
+    if (!NO_BODY_METHODS.has(payload.method)) {
+      if (
+        payload.body &&
+        typeof payload.body === 'object' &&
+        Object.keys(payload.body as object).length > 0
+      ) {
+        body = JSON.stringify(payload.body);
+        if (!forwardedHeaders['content-type']) {
+          forwardedHeaders['content-type'] = 'application/json';
+        }
+      } else if (typeof payload.body === 'string' && payload.body.length > 0) {
+        body = payload.body;
+      }
+    }
+
+    try {
+      const response = await fetch(targetUrl, {
+        method: payload.method,
+        headers: forwardedHeaders,
+        body,
+      });
+
+      res.status(200).json({
+        status: 'success',
+        data: {
+          statusCode: response.status,
+          statusText: response.statusText,
+          ok: response.ok,
+        },
+      });
+    } catch {
+      throw new AppError(
+        'Could not reach the target URL. Verify it is accessible.',
+        502
+      );
+    }
   }
 );
