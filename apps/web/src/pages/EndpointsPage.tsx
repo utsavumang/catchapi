@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Webhook } from 'lucide-react';
+import { Webhook, Search, X } from 'lucide-react';
 import { PageHeader } from '@/components/common/PageHeader';
 import { EmptyState } from '@/components/common/EmptyState';
 import { EndpointCard } from '@/components/endpoints/EndpointCard';
@@ -9,14 +9,22 @@ import { Button } from '@/components/ui/button';
 import { useGetEndpoints } from '@/hooks/useEndpoints';
 import { StatCard } from '@/components/common/StatCard';
 import { Skeleton } from '@/components/ui/skeleton';
+import { Input } from '@/components/ui/input';
 
 export const EndpointsPage = () => {
   const [createOpen, setCreateOpen] = useState(false);
+  const [search, setSearch] = useState('');
   const { data, isPending, isError, refetch } = useGetEndpoints();
 
   const endpoints = data?.data ?? [];
 
   const totalPayloads = endpoints.reduce((sum, ep) => sum + ep.payloadCount, 0);
+  const filteredEndpoints = search
+    ? endpoints.filter((ep) =>
+        ep.name.toLowerCase().includes(search.toLowerCase())
+      )
+    : endpoints;
+
   const mostActive = [...endpoints].sort(
     (a, b) => b.payloadCount - a.payloadCount
   )[0];
@@ -72,13 +80,23 @@ export const EndpointsPage = () => {
       )}
 
       {/* Empty State */}
-      {!isPending && !isError && endpoints.length === 0 && (
+      {!isPending && !isError && filteredEndpoints.length === 0 && (
         <EmptyState
           icon={<Webhook className="w-12 h-12" />}
-          title="No endpoints yet"
-          description="Create your first webhook endpoint to start catching incoming requests."
+          title={search ? 'No endpoints match your search' : 'No endpoints yet'}
+          description={
+            search
+              ? 'Try a different search term or clear the filter.'
+              : 'Create your first webhook endpoint to start catching incoming requests.'
+          }
           action={
-            <Button onClick={() => setCreateOpen(true)}>New Endpoint</Button>
+            search ? (
+              <Button variant="outline" onClick={() => setSearch('')}>
+                Clear search
+              </Button>
+            ) : (
+              <Button onClick={() => setCreateOpen(true)}>New Endpoint</Button>
+            )
           }
         />
       )}
@@ -86,7 +104,25 @@ export const EndpointsPage = () => {
       {/* Endpoints List */}
       {!isPending && !isError && endpoints.length > 0 && (
         <div className="space-y-4">
-          {endpoints.map((endpoint) => (
+          <div className="relative">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground pointer-events-none" />
+            <Input
+              placeholder="Search endpoints..."
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              className="pl-9 pr-9"
+            />
+            {search && (
+              <button
+                onClick={() => setSearch('')}
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
+              >
+                <X className="h-4 w-4" />
+              </button>
+            )}
+          </div>
+
+          {filteredEndpoints.map((endpoint) => (
             <EndpointCard key={endpoint._id} endpoint={endpoint} />
           ))}
         </div>
