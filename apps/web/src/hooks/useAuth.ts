@@ -1,6 +1,11 @@
 import { useMutation } from '@tanstack/react-query';
 import { useNavigate } from 'react-router-dom';
-import { LoginInput, RegisterInput } from '@catchapi/shared';
+import {
+  LoginInput,
+  RegisterInput,
+  UpdateProfileInput,
+  ChangePasswordInput,
+} from '@catchapi/shared';
 import {
   loginUser,
   registerUser,
