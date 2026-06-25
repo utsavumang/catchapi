@@ -13,6 +13,7 @@ interface AuthState {
 
   setCredentials: (token: string, user: User) => void;
   setToken: (token: string) => void;
+  setUser: (user: User) => void;
   setLoading: (loading: boolean) => void;
   logout: () => void;
 }
@@ -39,6 +40,11 @@ export const useAuthStore = create<AuthState>((set) => ({
 
   setToken: (token) => {
     set({ token, isAuthenticated: true });
+  },
+
+  setUser: (user) => {
+    localStorage.setItem('user', JSON.stringify(user));
+    set({ user });
   },
 
   setLoading: (loading) => {

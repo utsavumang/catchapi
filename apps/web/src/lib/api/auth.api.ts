@@ -1,5 +1,10 @@
 import { api } from '@/lib/axios';
-import { LoginInput, RegisterInput } from '@catchapi/shared';
+import {
+  LoginInput,
+  RegisterInput,
+  UpdateProfileInput,
+  ChangePasswordInput,
+} from '@catchapi/shared';
 
 interface AuthResponse {
   _id: string;
@@ -43,4 +48,20 @@ export const refreshToken = async (): Promise<{ token: string }> => {
 export const getMe = async (): Promise<MeResponse> => {
   const response = await api.get<MeResponse>('/auth/me');
   return response.data;
+};
+
+export const updateProfile = async (
+  data: UpdateProfileInput
+): Promise<{ _id: string; name: string; email: string }> => {
+  const response = await api.patch<{
+    status: string;
+    data: { user: { _id: string; name: string; email: string } };
+  }>('/auth/profile', data);
+  return response.data.data.user;
+};
+
+export const changePassword = async (
+  data: ChangePasswordInput
+): Promise<void> => {
+  await api.patch('/auth/password', data);
 };

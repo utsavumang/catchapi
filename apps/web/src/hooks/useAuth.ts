@@ -1,7 +1,13 @@
 import { useMutation } from '@tanstack/react-query';
 import { useNavigate } from 'react-router-dom';
 import { LoginInput, RegisterInput } from '@catchapi/shared';
-import { loginUser, registerUser, logoutUser } from '@/lib/api/auth.api';
+import {
+  loginUser,
+  registerUser,
+  logoutUser,
+  updateProfile,
+  changePassword,
+} from '@/lib/api/auth.api';
 import { useAuthStore } from '@/store/auth.store';
 import { queryClient } from '@/lib/queryClient';
 import { ROUTES } from '@/lib/constants';
@@ -48,6 +54,35 @@ export const useLogout = () => {
     mutationFn: logoutUser,
     onSettled: () => {
       // whether the API call succeeded or failed
+      logout();
+      queryClient.clear();
+      navigate(ROUTES.LOGIN);
+    },
+  });
+};
+
+export const useUpdateProfile = () => {
+  const { setUser } = useAuthStore();
+
+  return useMutation({
+    mutationFn: (data: UpdateProfileInput) => updateProfile(data),
+    onSuccess: (updatedUser) => {
+      setUser({
+        id: updatedUser._id,
+        name: updatedUser.name,
+        email: updatedUser.email,
+      });
+    },
+  });
+};
+
+export const useChangePassword = () => {
+  const { logout } = useAuthStore();
+  const navigate = useNavigate();
+
+  return useMutation({
+    mutationFn: (data: ChangePasswordInput) => changePassword(data),
+    onSuccess: () => {
       logout();
       queryClient.clear();
       navigate(ROUTES.LOGIN);
