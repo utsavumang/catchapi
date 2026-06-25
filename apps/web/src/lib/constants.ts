@@ -1,15 +1,14 @@
-// ─── Route Paths ─────────────────────────────────────────────────────────────
-// Centralised route constants
+// route constants
 export const ROUTES = {
   HOME: '/',
   LOGIN: '/login',
   REGISTER: '/register',
   DASHBOARD: '/dashboard',
   ENDPOINT_DETAIL: (urlId: string) => `/dashboard/${urlId}`,
+  SETTINGS: '/settings',
 } as const;
 
-// ─── Query Keys ───────────────────────────────────────────────────────────────
-// Using a factory pattern ensures consistency and prevents typos.
+// Query Keys
 export const queryKeys = {
   endpoints: {
     all: ['endpoints'] as const,
@@ -30,7 +29,7 @@ export const queryKeys = {
   },
 } as const;
 
-// ─── UI Constants ─────────────────────────────────────────────────────────────
+// UI Constants
 export const UI = {
   PAYLOAD_PAGE_SIZE: 50,
 } as const;

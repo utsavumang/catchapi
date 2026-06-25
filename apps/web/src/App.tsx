@@ -3,7 +3,7 @@ import {
   RouterProvider,
   Navigate,
 } from 'react-router-dom';
-import { SilentRefresh } from '@/components/common/SilentRefresh';
+import { useEffect } from 'react';
 import { ProtectedRoute } from '@/components/common/ProtectedRoute';
 import { PublicRoute } from '@/components/common/PublicRoute';
 import { DashboardLayout } from '@/components/layout/DashboardLayout';
@@ -13,6 +13,9 @@ import { EndpointsPage } from '@/pages/EndpointsPage';
 import { EndpointDetailPage } from '@/pages/EndpointDetailPage';
 import { NotFoundPage } from '@/pages/NotFoundPage';
 import { ErrorFallback } from '@/pages/ErrorFallback';
+import { SettingsPage } from '@/pages/SettingsPage';
+import { useAuthStore } from '@/store/auth.store';
+import { refreshToken } from '@/lib/api/auth.api';
 
 const router = createBrowserRouter([
   {
@@ -39,6 +42,7 @@ const router = createBrowserRouter([
         children: [
           { path: '/dashboard', element: <EndpointsPage /> },
           { path: '/dashboard/:urlId', element: <EndpointDetailPage /> },
+          { path: '/settings', element: <SettingsPage /> },
         ],
       },
     ],
@@ -48,12 +52,35 @@ const router = createBrowserRouter([
 ]);
 
 function App() {
-  return (
-    <>
-      <SilentRefresh />
-      <RouterProvider router={router} />
-    </>
-  );
+  useEffect(() => {
+    const attemptRefresh = async () => {
+      const { token, user, setToken, setLoading, logout } =
+        useAuthStore.getState();
+
+      if (token) {
+        setLoading(false);
+        return;
+      }
+
+      if (!user) {
+        setLoading(false);
+        return;
+      }
+
+      try {
+        const data = await refreshToken();
+        setToken(data.token);
+      } catch {
+        logout();
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    attemptRefresh();
+  }, []);
+
+  return <RouterProvider router={router} />;
 }
 
 export default App;

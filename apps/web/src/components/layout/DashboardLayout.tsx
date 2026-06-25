@@ -1,5 +1,5 @@
 import { Outlet } from 'react-router-dom';
-import { Webhook, Menu, X, LogOut } from 'lucide-react';
+import { Webhook, Menu, X, LogOut, Settings } from 'lucide-react';
 import { useState } from 'react';
 import { NavItem } from '@/components/layout/NavItem';
 import { UserAvatar } from '@/components/layout/UserAvatar';
@@ -18,7 +18,7 @@ export const DashboardLayout = () => {
 
   const sidebarContent = (
     <div className="flex flex-col h-full">
-      {/* ─── Logo ────────────────────────────────────────────────────── */}
+      {/* Logo */}
       <div className="flex items-center gap-2 px-4 py-5">
         <div className="flex items-center justify-center w-8 h-8 rounded-md bg-primary">
           <Webhook className="w-4 h-4 text-primary-foreground" />
@@ -30,7 +30,7 @@ export const DashboardLayout = () => {
 
       <Separator />
 
-      {/* ─── Navigation ──────────────────────────────────────────────── */}
+      {/* Navigation */}
       <nav className="flex-1 px-3 py-4 space-y-1">
         <p className="px-3 text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-2">
           Workspace
@@ -40,11 +40,16 @@ export const DashboardLayout = () => {
           icon={<Webhook className="w-4 h-4" />}
           label="Endpoints"
         />
+        <NavItem
+          to={ROUTES.SETTINGS}
+          icon={<Settings className="w-4 h-4" />}
+          label="Settings"
+        />
       </nav>
 
       <Separator />
 
-      {/* ─── User Section ────────────────────────────────────────────── */}
+      {/* User Section */}
       <div className="px-3 py-4 space-y-3">
         {user && (
           <div className="flex items-center gap-3 px-2">
@@ -75,12 +80,12 @@ export const DashboardLayout = () => {
 
   return (
     <div className="min-h-screen bg-background flex">
-      {/* ─── Desktop Sidebar ─────────────────────────────────────────── */}
+      {/* Desktop Sidebar */}
       <aside className="hidden md:flex w-60 flex-col bg-card border-r border-border shrink-0">
         {sidebarContent}
       </aside>
 
-      {/* ─── Mobile Sidebar Overlay ───────────────────────────────────── */}
+      {/* Mobile Sidebar Overlay */}
       {mobileOpen && (
         <div className="fixed inset-0 z-40 md:hidden">
           <div
@@ -93,7 +98,7 @@ export const DashboardLayout = () => {
         </div>
       )}
 
-      {/* ─── Main Content ─────────────────────────────────────────────── */}
+      {/* Main Content */}
       <div className="flex-1 flex flex-col min-w-0">
         <div className="md:hidden flex items-center gap-3 px-4 py-3 border-b border-border bg-card">
           <Button
@@ -115,7 +120,7 @@ export const DashboardLayout = () => {
         </main>
       </div>
 
-      {/* ─── Logout Confirmation ──────────────────────────────────────── */}
+      {/* Logout Confirmation */}
       <ConfirmDialog
         open={logoutOpen}
         onOpenChange={setLogoutOpen}
