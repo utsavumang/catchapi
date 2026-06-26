@@ -6,13 +6,14 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Button } from '@/components/ui/button';
 import { MethodBadge } from '@/components/payloads/MethodBadge';
 import { Payload } from '@/types';
+import { Highlight, themes } from 'prism-react-renderer';
 
 interface PayloadInspectorProps {
   payload: Payload;
   onClose: () => void;
 }
 
-const JsonDisplay = ({ data }: { data: unknown }) => {
+const JsonViewer = ({ data }: { data: unknown }) => {
   const isEmpty =
     data === null ||
     data === undefined ||
@@ -22,10 +23,25 @@ const JsonDisplay = ({ data }: { data: unknown }) => {
     return <p className="text-xs text-muted-foreground italic p-4">Empty</p>;
   }
 
+  const json = JSON.stringify(data, null, 2);
+
   return (
-    <pre className="text-xs font-mono text-foreground p-4 overflow-auto whitespace-pre-wrap break-all">
-      {JSON.stringify(data, null, 2)}
-    </pre>
+    <Highlight theme={themes.vsDark} code={json} language="json">
+      {({ style, tokens, getLineProps, getTokenProps }) => (
+        <pre
+          className="text-xs font-mono p-4 overflow-auto whitespace-pre-wrap break-all"
+          style={{ ...style, background: 'transparent', margin: 0 }}
+        >
+          {tokens.map((line, i) => (
+            <div key={i} {...getLineProps({ line })}>
+              {line.map((token, key) => (
+                <span key={key} {...getTokenProps({ token })} />
+              ))}
+            </div>
+          ))}
+        </pre>
+      )}
+    </Highlight>
   );
 };
 
@@ -120,21 +136,21 @@ export const PayloadInspector = ({
           value="body"
           className="flex-1 overflow-auto m-0 bg-background/50"
         >
-          <JsonDisplay data={payload.body} />
+          <JsonViewer data={payload.body} />
         </TabsContent>
 
         <TabsContent
           value="headers"
           className="flex-1 overflow-auto m-0 bg-background/50"
         >
-          <JsonDisplay data={payload.headers} />
+          <JsonViewer data={payload.headers} />
         </TabsContent>
 
         <TabsContent
           value="query"
           className="flex-1 overflow-auto m-0 bg-background/50"
         >
-          <JsonDisplay data={payload.query} />
+          <JsonViewer data={payload.query} />
         </TabsContent>
       </Tabs>
     </div>

@@ -155,6 +155,9 @@ importers:
       next-themes:
         specifier: ^0.4.6
         version: 0.4.6(react-dom@19.2.5(react@19.2.5))(react@19.2.5)
+      prism-react-renderer:
+        specifier: ^2.4.1
+        version: 2.4.1(react@19.2.5)
       radix-ui:
         specifier: ^1.4.3
         version: 1.4.3(@types/react-dom@19.2.3(@types/react@19.2.14))(@types/react@19.2.14)(react-dom@19.2.5(react@19.2.5))(react@19.2.5)
@@ -2845,6 +2848,12 @@ packages:
         integrity: sha512-rjPOSk2yI0714Pi8LdjIhDynXWqOvswmjRiTHj/1TOh1+0R26aKJ8vAVZRc4Ky5dQ5M5Bly1vrV/Klew6lThkA==,
       }
     deprecated: This is a stub types definition. pino-http provides its own type definitions, so you do not need this installed.
+
+  '@types/prismjs@1.26.6':
+    resolution:
+      {
+        integrity: sha512-vqlvI7qlMvcCBbVe0AKAb4f97//Hy0EBTaiW8AalRnG/xAN5zOiWWyrNqNXeq8+KAuvRewjCVY1+IPxk4RdNYw==,
+      }
 
   '@types/qs@6.15.0':
     resolution:
@@ -5877,6 +5886,14 @@ packages:
       }
     engines: { node: '>=18' }
 
+  prism-react-renderer@2.4.1:
+    resolution:
+      {
+        integrity: sha512-ey8Ls/+Di31eqzUxC46h8MksNuGx/n0AAC8uKpwFau4RPDYLuE3EXTp8N8G2vX2N7UC/+IXeNUnlWBGGcAG+Ig==,
+      }
+    peerDependencies:
+      react: '>=16.0.0'
+
   process-warning@5.0.0:
     resolution:
       {
@@ -8881,6 +8898,8 @@ snapshots:
     dependencies:
       pino-http: 11.0.0
 
+  '@types/prismjs@1.26.6': {}
+
   '@types/qs@6.15.0': {}
 
   '@types/range-parser@1.2.7': {}
@@ -10659,6 +10678,12 @@ snapshots:
   pretty-ms@9.3.0:
     dependencies:
       parse-ms: 4.0.0
+
+  prism-react-renderer@2.4.1(react@19.2.5):
+    dependencies:
+      '@types/prismjs': 1.26.6
+      clsx: 2.1.1
+      react: 19.2.5
 
   process-warning@5.0.0: {}
 
