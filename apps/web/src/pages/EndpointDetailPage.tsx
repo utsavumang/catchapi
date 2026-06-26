@@ -68,6 +68,7 @@ export const EndpointDetailPage = () => {
               <PayloadList
                 endpointId={endpoint._id}
                 selectedPayload={selectedPayload}
+                endpointName={endpoint.name}
                 onSelectPayload={setSelectedPayload}
                 newPayloadId={newPayloadId}
                 connectionStatus={connectionStatus}

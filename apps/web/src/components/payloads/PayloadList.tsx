@@ -1,5 +1,6 @@
 import { useState } from 'react';
-import { Inbox } from 'lucide-react';
+import { Inbox, Download } from 'lucide-react';
+import { exportPayloadsToJson } from '@/lib/export';
 import { Button } from '@/components/ui/button';
 import { EmptyState } from '@/components/common/EmptyState';
 import { PayloadSkeleton } from '@/components/payloads/PayloadSkeleton';
@@ -13,6 +14,7 @@ import { ConnectionStatus as ConnectionStatusType } from '@/hooks/useEndpointSoc
 
 interface PayloadListProps {
   endpointId: string;
+  endpointName: string;
   selectedPayload: Payload | null;
   onSelectPayload: (payload: Payload) => void;
   newPayloadId: string | null;
@@ -68,6 +70,16 @@ export const PayloadList = ({
             Requests received by this endpoint
           </p>
         </div>
+        <Button
+          variant="outline"
+          size="sm"
+          onClick={() => exportPayloadsToJson(payloads, endpointName)}
+          disabled={payloads.length === 0}
+          className="shrink-0"
+        >
+          <Download className="w-4 h-4 mr-2" />
+          Export
+        </Button>
       </div>
 
       <MethodFilter selected={selectedMethod} onChange={setSelectedMethod} />
