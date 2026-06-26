@@ -122,6 +122,18 @@ export const useEndpointSocket = ({
           }
         );
 
+        queryClient.setQueryData<EndpointWithUrl>(
+          queryKeys.endpoints.detail(urlId),
+          (oldData) => {
+            if (!oldData) return oldData;
+            return {
+              ...oldData,
+              payloadCount: oldData.payloadCount + 1,
+              lastReceivedAt: new Date().toISOString(),
+            };
+          }
+        );
+
         onNewPayload?.(payload);
       });
     },

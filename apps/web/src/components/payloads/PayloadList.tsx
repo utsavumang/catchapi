@@ -1,44 +1,54 @@
-import { useState } from 'react';
+import { useState, useCallback } from 'react';
 import { Inbox, Download } from 'lucide-react';
-import { exportPayloadsToJson } from '@/lib/export';
 import { Button } from '@/components/ui/button';
 import { EmptyState } from '@/components/common/EmptyState';
 import { PayloadSkeleton } from '@/components/payloads/PayloadSkeleton';
-import { useGetPayloads } from '@/hooks/usePayloads';
-import { UI } from '@/lib/constants';
 import { MethodFilter, HttpMethod } from '@/components/payloads/MethodFilter';
 import { PayloadCard } from '@/components/payloads/PayloadCard';
-import { Payload } from '@/types';
 import { ConnectionStatus } from '@/components/common/ConnectionStatus';
-import { ConnectionStatus as ConnectionStatusType } from '@/hooks/useEndpointSocket';
+import { useGetPayloads } from '@/hooks/usePayloads';
+import { useEndpointSocket } from '@/hooks/useEndpointSocket';
+import { exportPayloadsToJson } from '@/lib/export';
+import { cn } from '@/lib/utils';
+import { Payload } from '@/types';
+import { UI } from '@/lib/constants';
 
 interface PayloadListProps {
   endpointId: string;
+  urlId: string;
   endpointName: string;
   selectedPayload: Payload | null;
   onSelectPayload: (payload: Payload) => void;
-  newPayloadId: string | null;
-  connectionStatus: ConnectionStatusType;
-  reconnectAttempt: number;
-  onReconnect: () => void;
 }
 
 export const PayloadList = ({
   endpointId,
+  urlId,
+  endpointName,
   selectedPayload,
   onSelectPayload,
-  newPayloadId,
-  connectionStatus,
-  reconnectAttempt,
-  onReconnect,
 }: PayloadListProps) => {
   const [selectedMethod, setSelectedMethod] = useState<HttpMethod | undefined>(
     undefined
   );
+  const [newPayloadId, setNewPayloadId] = useState<string | null>(null);
+
+  // stable reference
+  const handleNewPayload = useCallback((payload: Payload) => {
+    setNewPayloadId(payload._id);
+    setTimeout(() => setNewPayloadId(null), 2000);
+  }, []);
+
+  const { connectionStatus, reconnectAttempt, reconnect } = useEndpointSocket({
+    urlId,
+    endpointId,
+    onNewPayload: handleNewPayload,
+  });
 
   const {
     data,
     isPending,
+    isFetching,
     isError,
     refetch,
     fetchNextPage,
@@ -54,6 +64,7 @@ export const PayloadList = ({
 
   return (
     <div className="space-y-4">
+      {/* Header */}
       <div className="flex items-center justify-between gap-4 flex-wrap">
         <div>
           <div className="flex items-center gap-3">
@@ -63,7 +74,7 @@ export const PayloadList = ({
             <ConnectionStatus
               status={connectionStatus}
               reconnectAttempt={reconnectAttempt}
-              onReconnect={onReconnect}
+              onReconnect={reconnect}
             />
           </div>
           <p className="text-sm text-muted-foreground">
@@ -82,8 +93,10 @@ export const PayloadList = ({
         </Button>
       </div>
 
+      {/* Method Filter */}
       <MethodFilter selected={selectedMethod} onChange={setSelectedMethod} />
 
+      {/* Loading State */}
       {isPending && (
         <div className="space-y-2">
           {Array.from({ length: 5 }).map((_, i) => (
@@ -92,6 +105,7 @@ export const PayloadList = ({
         </div>
       )}
 
+      {/* Error State */}
       {isError && (
         <div className="flex flex-col items-center gap-3 py-12 text-center">
           <p className="text-muted-foreground text-sm">
@@ -103,6 +117,7 @@ export const PayloadList = ({
         </div>
       )}
 
+      {/* Empty State */}
       {!isPending && !isError && payloads.length === 0 && (
         <EmptyState
           icon={<Inbox className="w-10 h-10" />}
@@ -115,8 +130,14 @@ export const PayloadList = ({
         />
       )}
 
+      {/* Payload List */}
       {!isPending && !isError && payloads.length > 0 && (
-        <div className="space-y-2">
+        <div
+          className={cn(
+            'space-y-2 transition-opacity duration-200',
+            isFetching && !isFetchingNextPage ? 'opacity-50' : 'opacity-100'
+          )}
+        >
           {payloads.map((payload) => (
             <PayloadCard
               key={payload._id}
@@ -129,6 +150,7 @@ export const PayloadList = ({
         </div>
       )}
 
+      {/* Load More */}
       {hasMore && (
         <div className="flex justify-center pt-2">
           <Button
