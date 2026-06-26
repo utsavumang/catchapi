@@ -1,6 +1,8 @@
 import { useState } from 'react';
 import { format, formatDistanceToNow } from 'date-fns';
-import { Copy, Check, X } from 'lucide-react';
+import { Copy, Check, X, RefreshCw } from 'lucide-react';
+import { Input } from '@/components/ui/input';
+import { useReplayPayload } from '@/hooks/usePayloads';
 import { toast } from 'sonner';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Button } from '@/components/ui/button';
@@ -51,6 +53,15 @@ export const PayloadInspector = ({
 }: PayloadInspectorProps) => {
   const [copied, setCopied] = useState(false);
 
+  const [replayOpen, setReplayOpen] = useState(false);
+  const [targetUrl, setTargetUrl] = useState('');
+  const {
+    mutate: replay,
+    isPending: isReplaying,
+    data: replayResult,
+    reset: resetReplay,
+  } = useReplayPayload();
+
   const handleCopyRaw = async () => {
     try {
       await navigator.clipboard.writeText(JSON.stringify(payload, null, 2));
@@ -64,7 +75,7 @@ export const PayloadInspector = ({
 
   return (
     <div className="flex flex-col h-full border border-border rounded-lg bg-card overflow-hidden">
-      {/* ─── Inspector Header ───────────────────────────────────────── */}
+      {/* Inspector Header */}
       <div className="flex items-start justify-between gap-3 px-4 py-3 border-b border-border shrink-0">
         <div className="space-y-1 min-w-0">
           <div className="flex items-center gap-2">
@@ -91,12 +102,26 @@ export const PayloadInspector = ({
             size="icon"
             className="w-7 h-7 text-muted-foreground hover:text-foreground"
             onClick={handleCopyRaw}
+            title="Copy raw payload"
           >
             {copied ? (
               <Check className="w-3.5 h-3.5 text-primary" />
             ) : (
               <Copy className="w-3.5 h-3.5" />
             )}
+          </Button>
+          <Button
+            variant="ghost"
+            size="icon"
+            className="w-7 h-7 text-muted-foreground hover:text-foreground"
+            title="Replay payload"
+            onClick={() => {
+              setReplayOpen((prev) => !prev);
+              setTargetUrl('');
+              resetReplay();
+            }}
+          >
+            <RefreshCw className="w-3.5 h-3.5" />
           </Button>
           <Button
             variant="ghost"
@@ -109,7 +134,52 @@ export const PayloadInspector = ({
         </div>
       </div>
 
-      {/* ─── Tabs ───────────────────────────────────────────────────── */}
+      {/* Replay Row */}
+      {replayOpen && (
+        <div className="px-4 py-2 border-b border-border bg-secondary/30 space-y-2">
+          <div className="flex items-center gap-2">
+            <Input
+              placeholder="https://your-server.com/webhook"
+              value={targetUrl}
+              onChange={(e) => setTargetUrl(e.target.value)}
+              className="h-7 text-xs"
+              disabled={isReplaying}
+            />
+            <Button
+              size="sm"
+              className="h-7 text-xs shrink-0"
+              disabled={!targetUrl.trim() || isReplaying}
+              onClick={() => {
+                try {
+                  new URL(targetUrl);
+                } catch {
+                  toast.error('Enter a valid URL');
+                  return;
+                }
+                replay({
+                  endpointId: payload.endpointId,
+                  payloadId: payload._id,
+                  targetUrl,
+                });
+              }}
+            >
+              {isReplaying ? 'Sending...' : 'Send'}
+            </Button>
+          </div>
+          {replayResult && (
+            <p
+              className={`text-xs font-mono ${
+                replayResult.ok ? 'text-emerald-400' : 'text-red-400'
+              }`}
+            >
+              {replayResult.ok ? '✓' : '✗'} {replayResult.statusCode}{' '}
+              {replayResult.statusText}
+            </p>
+          )}
+        </div>
+      )}
+
+      {/* Tabs */}
       <Tabs defaultValue="body" className="flex-1 flex flex-col min-h-0">
         <TabsList className="w-full rounded-none border-b border-border bg-transparent justify-start px-4 h-10 shrink-0">
           <TabsTrigger

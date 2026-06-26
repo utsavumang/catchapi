@@ -1,5 +1,5 @@
-import { useInfiniteQuery } from '@tanstack/react-query';
-import { getPayloads } from '@/lib/api/payloads.api';
+import { useInfiniteQuery, useMutation } from '@tanstack/react-query';
+import { getPayloads, replayPayload } from '@/lib/api/payloads.api';
 import { queryKeys } from '@/lib/constants';
 import { Payload } from '@/types';
 
@@ -24,12 +24,12 @@ export const useGetPayloads = ({
       }),
     initialPageParam: undefined as string | undefined,
     getNextPageParam: (lastPage) => {
-      // If there are more pages, return the cursor for the next fetch
+      // return cursor if more pages
       return lastPage.hasMore && lastPage.nextCursor
         ? lastPage.nextCursor
         : undefined;
     },
-    // Flatten all pages into a single array
+    // flatten all pages
     select: (data) => ({
       pages: data.pages,
       pageParams: data.pageParams,
@@ -37,5 +37,19 @@ export const useGetPayloads = ({
       hasMore: data.pages[data.pages.length - 1]?.hasMore ?? false,
       nextCursor: data.pages[data.pages.length - 1]?.nextCursor ?? undefined,
     }),
+  });
+};
+
+export const useReplayPayload = () => {
+  return useMutation({
+    mutationFn: ({
+      endpointId,
+      payloadId,
+      targetUrl,
+    }: {
+      endpointId: string;
+      payloadId: string;
+      targetUrl: string;
+    }) => replayPayload(endpointId, payloadId, targetUrl),
   });
 };
