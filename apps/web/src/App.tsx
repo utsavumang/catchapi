@@ -1,12 +1,9 @@
-import {
-  createBrowserRouter,
-  RouterProvider,
-  Navigate,
-} from 'react-router-dom';
+import { createBrowserRouter, RouterProvider } from 'react-router-dom';
 import { useEffect } from 'react';
 import { ProtectedRoute } from '@/components/common/ProtectedRoute';
 import { PublicRoute } from '@/components/common/PublicRoute';
 import { DashboardLayout } from '@/components/layout/DashboardLayout';
+import { LandingPage } from '@/pages/LandingPage';
 import { LoginPage } from '@/pages/LoginPage';
 import { RegisterPage } from '@/pages/RegisterPage';
 import { EndpointsPage } from '@/pages/EndpointsPage';
@@ -20,7 +17,7 @@ import { refreshToken } from '@/lib/api/auth.api';
 const router = createBrowserRouter([
   {
     path: '/',
-    element: <Navigate to="/dashboard" replace />,
+    element: <LandingPage />,
     errorElement: <ErrorFallback />,
   },
 
