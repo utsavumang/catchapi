@@ -18,7 +18,6 @@ import { Separator } from '@/components/ui/separator';
 import { useAuthStore } from '@/store/auth.store';
 import { useUpdateProfile, useChangePassword } from '@/hooks/useAuth';
 
-// Update Profile Form
 const ProfileForm = () => {
   const user = useAuthStore((state) => state.user);
   const [serverError, setServerError] = useState<string | null>(null);
@@ -87,8 +86,6 @@ const ProfileForm = () => {
     </div>
   );
 };
-
-// Change Password Form
 
 const PasswordForm = () => {
   const [serverError, setServerError] = useState<string | null>(null);
@@ -170,11 +167,9 @@ const PasswordForm = () => {
   );
 };
 
-// Page
-
 export const SettingsPage = () => {
   return (
-    <div className="p-6 max-w-2xl mx-auto space-y-6">
+    <div className="p-6 max-w-2xl mx-auto space-y-6 animate-in fade-in-0 duration-300">
       <PageHeader
         title="Settings"
         description="Manage your account settings."

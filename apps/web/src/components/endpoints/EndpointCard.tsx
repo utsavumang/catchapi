@@ -59,9 +59,9 @@ export const EndpointCard = ({ endpoint }: EndpointCardProps) => {
     <>
       <div
         onClick={() => navigate(ROUTES.ENDPOINT_DETAIL(endpoint.urlId))}
-        className="group p-5 rounded-lg border border-border bg-card hover:border-primary/50 hover:bg-card/80 transition-all cursor-pointer space-y-3"
+        className="group p-5 rounded-lg border border-border bg-card hover:border-primary/50 hover:bg-card/80 transition-all duration-200 cursor-pointer space-y-3"
       >
-        {/* ─── Header ────────────────────────────────────────────────── */}
+        {/* Header */}
         <div className="flex items-start justify-between gap-4">
           <div className="flex-1 min-w-0 space-y-1">
             <div className="flex items-center gap-2">
@@ -94,7 +94,7 @@ export const EndpointCard = ({ endpoint }: EndpointCardProps) => {
           </Button>
         </div>
 
-        {/* ─── Webhook URL ───────────────────────────────────────────── */}
+        {/* Webhook URL */}
         <div
           className="flex items-center gap-2 px-3 py-2 rounded-md bg-background border border-border cursor-text"
           onClick={(e) => e.stopPropagation()}
@@ -116,7 +116,7 @@ export const EndpointCard = ({ endpoint }: EndpointCardProps) => {
           </Button>
         </div>
 
-        {/* ─── Footer ────────────────────────────────────────────────── */}
+        {/* Footer */}
         <div className="flex items-center justify-between text-xs text-muted-foreground">
           <span>
             Created{' '}

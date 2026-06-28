@@ -30,7 +30,7 @@ export const EndpointsPage = () => {
   )[0];
 
   return (
-    <div className="p-6 max-w-4xl mx-auto space-y-6">
+    <div className="p-6 max-w-4xl mx-auto space-y-6 animate-in fade-in-0 duration-300">
       <PageHeader
         title="Endpoints"
         description="Manage your webhook endpoints and inspect incoming payloads."

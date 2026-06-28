@@ -120,7 +120,7 @@ export const PayloadList = ({
       {/* Empty State */}
       {!isPending && !isError && payloads.length === 0 && (
         <EmptyState
-          icon={<Inbox className="w-10 h-10" />}
+          icon={<Inbox className="w-12 h-12" />}
           title="No payloads yet"
           description={
             selectedMethod
