@@ -70,10 +70,6 @@ export const useEndpointSocket = ({
         setConnectionStatus('disconnected');
       });
 
-      socket.on(SOCKET_EVENTS.JOINED, ({ room }: { room: string }) => {
-        console.info(`Socket joined room: ${room}`);
-      });
-
       socket.on(SOCKET_EVENTS.PAYLOAD_NEW, (payload: Payload) => {
         queryClient.setQueryData<InfiniteData<PaginatedPayloads>>(
           queryKeys.payloads.byEndpoint(endpointId),

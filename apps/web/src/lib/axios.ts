@@ -19,14 +19,14 @@ api.interceptors.request.use((config) => {
 });
 
 api.interceptors.response.use(
-  // Success path
+  // success path
   (response) => response,
 
   async (error) => {
     const originalRequest = error.config;
 
     const isAuthRoute = originalRequest?.url?.includes('/auth/');
-    // Only attempt refresh on 401 responses.
+    // attempt refresh on 401 responses.
     if (
       error.response?.status !== 401 ||
       originalRequest._retry ||
@@ -47,7 +47,7 @@ api.interceptors.response.use(
 
       return api(originalRequest);
     } catch {
-      // Refresh failed, session is unrecoverable
+      // session is unrecoverable
       useAuthStore.getState().logout();
       window.location.href = ROUTES.LOGIN;
       return Promise.reject(error);
