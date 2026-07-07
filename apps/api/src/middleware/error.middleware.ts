@@ -26,6 +26,13 @@ export const errorHandler = (
     isOperational = true;
   }
 
+  const maybeHttpError = err as Error & { status?: number; expose?: boolean };
+  if (maybeHttpError.expose === true && maybeHttpError.status) {
+    statusCode = maybeHttpError.status;
+    message = err.message;
+    isOperational = true;
+  }
+
   if (!isOperational) {
     logger.fatal(
       {
