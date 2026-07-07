@@ -1,7 +1,7 @@
 # CatchAPI
 
 A webhook inspection tool. Point any service at a CatchAPI endpoint URL
-and inspect every request it sends — headers, body, query params — in real time.
+and inspect every request it sends, headers, body, query params, in real time.
 
 Built as a portfolio project to learn full-stack TypeScript, monorepo tooling,
 and real-time web development.
@@ -21,6 +21,7 @@ Check the live deployment [Here](https://catchapi-web.vercel.app/)
 ## Tech stack
 
 **Backend**
+
 - Node.js + Express 5
 - MongoDB + Mongoose
 - Socket.io for real-time delivery
@@ -29,6 +30,7 @@ Check the live deployment [Here](https://catchapi-web.vercel.app/)
 - Swagger UI for API docs (`/api/docs`)
 
 **Frontend**
+
 - React 19 + Vite
 - TanStack Query for server state
 - Zustand for client state
@@ -37,11 +39,13 @@ Check the live deployment [Here](https://catchapi-web.vercel.app/)
 - Socket.io client for live payload feed
 
 **Shared**
+
 - `@catchapi/shared` — Zod schemas and TypeScript types shared between
   frontend and backend. One schema validates on the server and documents
   the API. The same schema validates on the client.
 
 **Monorepo**
+
 - pnpm workspaces
 - Turborepo for build orchestration
 - Husky + commitlint + lint-staged
@@ -72,6 +76,7 @@ Backend runs on `http://localhost:5000`
 API docs at `http://localhost:5000/api/docs`
 
 ## Sending a test webhook
+
 POST http://localhost:5000/w/<your-endpoint-url-id>
 Content-Type: application/json
 { "hello": "world" }
