@@ -40,7 +40,7 @@ Check the live deployment [Here](https://catchapi-web.vercel.app/)
 
 **Shared**
 
-- `@catchapi/shared` — Zod schemas and TypeScript types shared between
+- `@catchapi/shared` - Zod schemas and TypeScript types shared between
   frontend and backend. One schema validates on the server and documents
   the API. The same schema validates on the client.
 
@@ -85,14 +85,14 @@ The payload appears in the dashboard instantly.
 
 ## Architecture notes
 
-- The shared package builds first — Turborepo's `dependsOn: ["^build"]`
+- The shared package builds first Turborepo's `dependsOn: ["^build"]`
   ensures this before the API or frontend start
 - Refresh tokens are stored as SHA-256 hashes in MongoDB, never the raw token
-- The refresh token lives in an httpOnly cookie — JavaScript can't read it
-- Access tokens live in memory only — not localStorage, not sessionStorage
-- Socket.io broadcasts new payloads directly into the TanStack Query cache —
+- The refresh token lives in an httpOnly cookie so JavaScript can't read it
+- Access tokens live in memory only, not localStorage, not sessionStorage
+- Socket.io broadcasts new payloads directly into the TanStack Query cache,
   no polling, no full refetch
-- Cursor pagination uses MongoDB ObjectId ordering — consistent performance
+- Cursor pagination uses MongoDB ObjectId ordering for consistent performance
   regardless of collection size
 
 ## API docs
