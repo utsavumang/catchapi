@@ -8,7 +8,7 @@ and real-time web development.
 
 Check the live deployment [Here](https://catchapi-web.vercel.app/)
 
-![Dashboard screenshot](./docs/screenshot.png)
+![Dashboard screenshot](./docs/screenshot.png?v=2)
 
 ## What it does
 
